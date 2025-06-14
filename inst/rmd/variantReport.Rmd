@@ -1,0 +1,391 @@
+---
+title: "InSilico Sequencing Report "
+subtitle: "<h4>SNPannotator package</h4>"
+output: 
+  html_document:
+    css: style.css
+---
+
+---
+
+
+
+
+```{r , echo=FALSE,results='asis',fig.width=10,warning=FALSE}
+#### report variables ####
+output <- output_list$mainData
+
+varCount = max(output$`#gSNP`)
+
+capitalize_first <- function(x) {
+  paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
+}
+
+#### variant table for index table ####
+vt=output[,.N-1,by=list(gSNP)]
+
+vt[,link := sprintf('<li><a href="#variant%s">%s</a></li>', .I , gSNP)]
+
+vt <- vt[,c(3,1)]
+
+##### function to create report per variant ####
+makeReport_CADD <- function(var.data) {
+  
+  setDT(var.data)
+  r2 = as.numeric(output_list$config$general$r2)
+  window_size = as.numeric(output_list$config$general$window_size)
+  
+  # find unique gene names  
+  genes=var.data$Gene
+  genes= strsplit(trimws(genes), ",\\s*")
+  genes =unlist(genes)
+  genes = gsub(x = genes,pattern = '(.+)(\\(.+\\))',replacement = '\\1')
+  genes= paste(sort(unique(genes)),collapse = ', ')
+  
+  # associations
+  if('Phenotype' %in% names(var.data))
+  {
+    assoc=var.data$Phenotype
+  }
+  
+  assoc = strsplit(trimws(assoc), ";\\s*")
+  assoc = sort(unique(unlist(assoc)))
+  assoc = capitalize_first(assoc)
+  # check if CADD score exists and correct it
+  has.cadd <- FALSE
+  max.cadd <- NULL
+  
+  if(is.element('CADD',names(var.data)))
+  {
+    var.data[,cadd.score := ifelse(!grepl(x = CADD,pattern = ','),
+                                   sub(x = CADD,pattern = "(.+) = (.+)",replacement = '\\2'),
+                                   NA),
+             by=Linked_SNP]
+    
+    var.data$cadd.score <- as.numeric(var.data$cadd.score)
+    
+    has.cadd <- TRUE
+    max.cadd <- max(var.data$cadd.score,na.rm = TRUE)
+  }
+  
+  # report
+  setDT(var.data)
+  gsnp.data = var.data[gSNP == Linked_SNP,]
+  # starting <div>
+  cat(sprintf('<div id="variant%s">',gsnp.data$`#gSNP`))
+  
+  cat(sprintf('<span class="topic">Variant ID:</span> <span class="value">%s</span><br/>', gsnp.data$gSNP))
+  cat(sprintf('<span class="topic">Position: </span> <span class="value">%s:%s (%s)</span><br/>', gsnp.data$Chr, gsnp.data$Pos, gsnp.data$Cytoband))
+  cat(sprintf('<span class="topic">Alleles: </span> <span class="value">%s (%s)</span><br/>', gsnp.data$`Alleles in population`, gsnp.data$`Allele frequencies`))
+  cat(sprintf('<span class="topic">Most severe consequence: </span> <span class="value">%s</span><br/>', tools::toTitleCase(gsub(x =  gsnp.data$Most_severe_consequence,pattern = '_',replacement = ' '))))
+  cat(sprintf('<span class="topic">Proxy Variants: </span> <span class="value">%s </span><br/>', nrow(var.data)-1))
+  
+  
+  cat('<br/><span class="topic">Mapped genes</span>')
+  cat(kableExtra::kable(genes,format = 'html',col.names = NULL))
+  
+  
+  
+  
+  # if(length(assoc) > 15 & length(assoc) %% 2 == 0)
+  # {
+  #   assoc=cbind(assoc[1:(length(assoc)/2)],
+  #               assoc[((length(assoc)/2) +1 ):length(assoc)])
+  # } else if (length(assoc) > 15 & length(assoc) %% 2 != 0)
+  # {
+  #   assoc=cbind(assoc[1:(ceiling(length(assoc)/2))],
+  #               c(assoc[(ceiling((length(assoc)/2))+1):length(assoc)],''))
+  # }
+  # 
+  
+  if (length(assoc) > 15) {
+    # Calculate the number of elements in each column
+    col_length <- ceiling(length(assoc) / 3)
+    
+    # Create three columns
+    col1 <- assoc[1:col_length]
+    col2 <- assoc[(col_length + 1):(2 * col_length)]
+    col3 <- assoc[(2 * col_length + 1):length(assoc)]
+    
+    # Combine columns into a matrix
+    assoc <- cbind(col1, col2, col3)
+    
+    # Optional: Fill with empty strings if necessary
+    assoc[is.na(assoc)] <- ''
+  }
+  
+  if(length(assoc)>1)
+  {
+    
+    cat('<br/><span class="topic">Associated phenotypes</span>')
+    if(!is.null(ncol(assoc)))
+    {
+
+      cat(kableExtra::kable(assoc,format = 'html', col.names = NULL,booktabs = TRUE) %>% 
+            kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+                                      full_width = F, 
+                                      position = "left") %>% 
+            kableExtra::column_spec(1, border_right = "1px solid black") %>%
+            kableExtra::column_spec(2, border_right = "1px solid black"))
+    } 
+    else
+    {
+      cat(kableExtra::kable(assoc,format = 'html', col.names = NULL,booktabs = TRUE) %>%
+            kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                                      full_width = F,
+                                      position = "left"))
+    }
+
+  }
+  
+  cat('<br/>')
+  
+  cat(kableExtra::kable(var.data[,.N,by=Most_severe_consequence],format = 'html',col.names = c('Most severe consequence','count'),caption = '<span class="topic">Variant types</span>',align = c("l", "l"))%>% 
+        kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+                                  full_width = F, 
+                                  position = "left") %>%
+        kableExtra::column_spec(1, bold = TRUE, border_right = TRUE,width="15em") %>%
+        kableExtra::column_spec(2, width="10em")) 
+  
+  
+  cat('<br/>')
+  
+  if(var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',.N] > 0)
+    cat(kableExtra::kable(var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant', list(Linked_SNP,CADD,LD,Gene)],format = 'html',col.names = c('rsID','CADD score','LD','Gene'),caption = '<span class="topic">Missense variants</span>',align = c("l", "l", "l","l"))%>% 
+          kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+                                    full_width = F, 
+                                    position = "left") %>%
+          kableExtra::column_spec(1, bold = TRUE, border_right = TRUE,width="10em") %>%
+          kableExtra::column_spec(2, width="10em", border_right = TRUE,extra_css = 'text-align:left;') %>%
+          kableExtra::column_spec(3, width="10em", border_right = TRUE,extra_css = 'text-align:left;') %>%
+          kableExtra::column_spec(4, width="15em")) 
+  
+  cat('<br/>')
+  
+  
+  if(has.cadd)
+    cat(kableExtra::kable(head(var.data[order(cadd.score,decreasing = TRUE),
+                                        list(Linked_SNP,CADD,as.character(LD),Gene)]),
+                          format = 'html',
+                          col.names = c('rsID','CADD score','LD','Gene'),
+                          caption = '<span class="topic">Most deleterious variants</span>',
+                          align = c("l", "l", "l","l"))%>% 
+          kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+                                    full_width = F, 
+                                    position = "left") %>%
+          kableExtra::column_spec(1, bold = TRUE, border_right = TRUE,width="10em") %>%
+          kableExtra::column_spec(2, width="10em", border_right = TRUE,extra_css = 'text-align:left;') %>%
+          kableExtra::column_spec(3, width="10em", border_right = TRUE,extra_css = 'text-align:left;') %>%
+          kableExtra::column_spec(4, width="15em")) 
+  
+  cat('<br/>')
+  cat('<br/>')
+  
+  if(nrow(var.data) > 1)
+  {
+    mis.var <- var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',.N] > 0
+    
+    if(has.cadd)
+    {
+      plot(
+        ggplot2::ggplot() + 
+          ggplot2::geom_point(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence!='missense_variant',],mapping =  aes(x=Pos , y=LD,color=cadd.score),size=3) +  
+          ggplot2::geom_point(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',],mapping =  aes(x=Pos , y=LD),size=3,shape=10,color='black',stroke=1.5) +  
+          ggplot2::geom_text(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',],
+                             mapping = aes(x=Pos , y=LD,label=Linked_SNP),
+                             hjust=-.3) +  
+          ggplot2::geom_point(data = var.data[gSNP==Linked_SNP,],mapping = aes(x=Pos , y=LD),
+                              color='black',shape=17,size=4) +
+          ggplot2::labs(title = "Regional plot", x = "Position",y= expression(LD (R^2))) + 
+          ggplot2::scale_y_continuous(limits = c(r2 ,1.035))+
+          ggplot2::scale_x_continuous(limits = c(gsnp.data$Pos-(window_size*1000) ,gsnp.data$Pos+(window_size*1000)))+
+          ggplot2::scale_color_gradient2(low = "darkblue",mid = "orange",high = "darkred",midpoint = (max.cadd/2), limits=c(0,max.cadd)) +
+          ggplot2::annotate(geom='text',x=gsnp.data$Pos,y=1.035,label=gsnp.data$gSNP) + {
+            if(mis.var)
+              ggplot2::annotate(geom='text',x=gsnp.data$Pos+420000,y=.98,label='missense variant')
+          }+{
+            if(mis.var)
+              ggplot2::geom_point(aes(x=gsnp.data$Pos+320000, y= 0.975),size=3,shape=10,color='black',stroke=1.5) 
+          }+{
+            if(mis.var)  
+              ggplot2::geom_rect(mapping=aes(xmin = gsnp.data$Pos+300000,
+                                             xmax = gsnp.data$Pos+500000,
+                                             ymin=.95,
+                                             ymax=1),color='black',alpha=0) 
+          }+
+          ggplot2::theme_light() +
+          ggplot2::theme(legend.position = c(0.1,0.7))+
+          ggplot2::labs(color=("CADD score")))
+    }
+    else
+    {
+      plot(
+        ggplot2::ggplot() + 
+          ggplot2::geom_point(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence!='missense_variant',],mapping =  aes(x=Pos , y=LD,color=LD),size=3) +  
+          ggplot2::geom_point(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',],mapping =  aes(x=Pos , y=LD),size=3,shape=10,color='black',stroke=1.5) +  
+          ggplot2::geom_text(data = var.data[gSNP!=Linked_SNP & Most_severe_consequence=='missense_variant',],
+                             mapping = aes(x=Pos , y=LD,label=Linked_SNP),
+                             hjust=-.3) +  
+          ggplot2::geom_point(data = var.data[gSNP==Linked_SNP,],mapping = aes(x=Pos , y=LD),
+                              color='black',shape=17,size=4) +
+          ggplot2::labs(title = "Regional plot", x = "Position",y= expression(LD (R^2))) + 
+          ggplot2::scale_y_continuous(limits = c(r2 ,1.035))+
+          ggplot2::scale_x_continuous(limits = c(gsnp.data$Pos-(window_size*1000) ,gsnp.data$Pos+(window_size*1000)))+
+          ggplot2::scale_color_gradient2(low = "darkblue",mid = "orange",high = "darkred",midpoint = ((1+r2)/2), limits=c(r2,1)) +
+          ggplot2::annotate(geom='text',x=gsnp.data$Pos,y=1.035,label=gsnp.data$gSNP) + {
+            if(mis.var)
+              ggplot2::annotate(geom='text',x=gsnp.data$Pos+420000,y=.98,label='missense variant')
+          }+{
+            if(mis.var)
+              ggplot2::geom_point(aes(x=gsnp.data$Pos+320000, y= 0.975),size=3,shape=10,color='black',stroke=1.5) 
+          }+{
+            if(mis.var)  
+              ggplot2::geom_rect(mapping=aes(xmin = gsnp.data$Pos+300000,
+                                             xmax = gsnp.data$Pos+500000,
+                                             ymin=.95,
+                                             ymax=1),color='black',alpha=0) 
+          }+
+          ggplot2::theme_light() +
+          ggplot2::theme(legend.position = c(0.1,0.7)))
+    }
+    
+  }
+  
+  cat("</div><br/><br/><br/><hr class='teal'/>")
+}
+
+
+#### start of the report #####
+cat('<h4>Parameters</h4>\n',fill=TRUE)
+cat('<b>Population:</b> ',output_list$config$general$db,'\n',fill=TRUE)
+cat('<b>Genomic build:</b> ',sub(x = toupper(output_list$config$general$build),pattern = 'https?://',replacement = ''),'\n',fill=TRUE)
+cat('<b>R2:</b> ',output_list$config$general$r2,'\n',fill=TRUE)
+cat('<b>Window-size:</b> ',output_list$config$general$window_size,'Kb\n',fill=TRUE)
+cat("<hr class='double-line'/>")
+
+
+cat('<h4>Input variants</h4>\n')
+cat('<ol>')
+cat(vt$link)
+cat('</ol>')
+
+cat("<hr class='teal'/>")
+
+
+for(i in seq_len(varCount))
+{
+  
+  var.data = output[`#gSNP` == i,]
+  makeReport_CADD(var.data)
+}
+
+#### STRING DB plots
+
+## network image
+
+if(!is.null(output_list$config$STRING_DB$server))
+  cat('<h3>STRING DB report</h3>\n')
+
+if(output_list$config$STRING_DB$network_image == TRUE)
+  cat('<h4>Interaction network</h4>\n')
+
+if(!is.null(output_list$config$paths$output.string.network.image.file) & 
+   file.exists(output_list$config$paths$output.string.network.image.file))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.network.image.file), 
+                 alt = 'ineteraction_network', 
+                 style = 'width:100%')
+
+## enrichment plots
+## 1
+if(output_list$config$STRING_DB$enrichment_image == TRUE)
+  cat('<h4>Functional enrichment visualizations</h4>\n')
+
+if(!is.null(output_list$config$paths$output.string.network.image.file) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.function))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.function), 
+                 alt = 'function_enrichment', 
+                 style = 'width:100%')
+
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.process) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.process))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.process), 
+                 alt = 'process_enrichment', 
+                 style = 'width:100%')
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.component) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.component))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.component), 
+                 alt = 'component_enrichment', 
+                 style = 'width:100%')
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.diseases) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.diseases))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.diseases), 
+                 alt = 'disease_enrichment', 
+                 style = 'width:100%')
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.tissues) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.tissues))
+  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.tissues), 
+                 alt = 'tissue_enrichment', 
+                 style = 'width:100%')
+
+
+if(!is.null(output_list$STRING_webLink))
+  cat(sprintf("<a href='%s' target='_blank'>Link to STRING website</a>",output_list$STRING_webLink))
+
+#### footnote ####
+cat("<hr class='thin'/>")
+cat(sprintf("Generated by <b>SNPannotator</b> [v.%s] (%s)",packageVersion("SNPannotator"),format(Sys.time(), "%X - %b %d %Y")))
+
+```
+
+
+```{r echo=FALSE, results='asis'}
+cat('
+<style>
+  #scrollToTopBtn {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 50%;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+
+  #scrollToTopBtn:hover {
+    opacity: 1;
+  }
+</style>
+
+<button onclick="topFunction()" id="scrollToTopBtn" title="Go to top">↑</button>
+
+<script>
+  // Show button when user scrolls down 200px
+  window.onscroll = function() {scrollFunction()};
+  function scrollFunction() {
+    if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+      document.getElementById("scrollToTopBtn").style.display = "block";
+    } else {
+      document.getElementById("scrollToTopBtn").style.display = "none";
+    }
+  }
+
+  // Smooth scroll to top
+  function topFunction() {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, Opera
+  }
+</script>
+')
+```

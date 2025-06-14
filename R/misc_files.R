@@ -1,0 +1,623 @@
+correctSynonymIDs <- function(varInfo)
+{
+  if(is.null(varInfo$LDList))
+    return(list(0))
+  LDTable <- varInfo$LDList # table including targetSNP and linkedSNPs , names and LDs
+  LDVariants <- varInfo$LDlistFull # list of found data for LD variants
+  LDVariantsNames <- sapply(LDVariants,function(x) return(x$name)) # name of found variants in high LD
+  # check if the same name or a synonym is used for the found variant info
+
+  LDTable[,checkSynonyms := ifelse(is.element(variation2 ,LDVariantsNames),0,1)]
+
+  if(LDTable[checkSynonyms ==1,.N] > 0)
+  {
+
+    LDTable[checkSynonyms == 1,
+            variation3 := returnSynonym(variation2,LDVariants), by = variation2]
+
+    # some notifications
+    changedIDsTable <- LDTable[checkSynonyms == 1,]
+    if(nrow(changedIDsTable) > 0)
+    {
+      print_and_log("\n== Some synonym rsIDs were changed in the original LD table.")
+      for(i in seq_len(nrow(changedIDsTable)))
+        print_and_log(sprintf("%s - %s changed to %s",
+                              i,
+                              changedIDsTable[i,variation2],
+                              changedIDsTable[i,variation3]))
+    }
+
+    LDTable[,variation2 := ifelse(is.na(variation3),variation2,variation3)]
+  }
+  return(LDTable)
+}
+
+returnSynonym <- function(rsID, LDVariants)
+{
+  newID <- rsID
+
+  if(is.null(LDVariants) || length(LDVariants) < 1)
+    return(newID)
+  else
+    for(i in seq_len(length(LDVariants)))
+      if(is.element(rsID,LDVariants[[i]]$synonyms))
+        newID <- LDVariants[[i]]$name
+
+    return(newID)
+}
+
+saveOutputData <- function(varInfoTbl, wb)
+{
+  # wb <- createWorkbook()
+  sheetName=varInfoTbl[1,gSNP]
+  addWorksheet(wb, sheetName)
+  writeDataTable(wb, sheetName, x=varInfoTbl, tableStyle = "TableStyleMedium9")
+  freezePane(wb, sheetName, firstRow = TRUE)
+  setColWidths(wb, sheetName, cols = 1:ncol(varInfoTbl), widths = "auto")
+  #saveWorkbook(wb, path, overwrite = overwriteExistingFile)
+  return(wb)
+}
+
+appendXLSXfile <- function(output,thisSheetName,fileName,addFirst = FALSE)
+{
+  # styles
+  #===========
+  headerStyle <- createStyle(
+    fontSize = 12,
+    fontColour = "white",
+    fgFill = "#4F81BD",
+    halign = "center",
+    textDecoration = "bold"
+  )
+
+  centerAlign <- createStyle(halign = "center")
+
+  #=========================================
+  if(!is.data.table(output))
+    setDT(output)
+  #this.output <- as.data.table(output)
+  rowCount <- nrow(output)+1
+  colCount <- ncol(output)
+
+  if(!file.exists(fileName))
+  {
+    #write.xlsx(x = this.output, file = fileName,sheetName= thisSheetName)
+    wb <- createWorkbook()
+    addWorksheet(wb, thisSheetName)
+    addStyle(wb, sheet = thisSheetName, style = centerAlign, cols = c(1:10,17),rows = 1:rowCount,gridExpand = TRUE)
+    setColWidths(wb, sheet = thisSheetName, cols = 1:colCount, widths = "auto")
+
+    setColWidths(wb, sheet = thisSheetName, cols = c(1), widths = 7)
+    # setColWidths(wb, sheet = thisSheetName, cols = c(11:16.18,19), widths = 20)
+    # setColWidths(wb, sheet = thisSheetName, cols = c(20), widths = 50)
+
+    writeData(wb, thisSheetName, output, headerStyle = headerStyle)
+    freezePane(wb, sheet = thisSheetName, firstRow = TRUE)
+    addFilter(wb, sheet = thisSheetName, cols = c(1,2), rows = 1)
+
+
+    # apply red font color to rows for gSNPs
+    redStyle <- createStyle(fontColour = "#FF0000",halign = "left")
+    blackStyle <- createStyle(fontColour = "black",halign = "left")
+
+    for (i in 1:nrow(output)) {
+      if (output$gSNP[i] == output$Linked_SNP[i])
+        addStyle(wb, thisSheetName, redStyle, rows = i+1 , cols = c(2,3))
+      else
+        addStyle(wb, thisSheetName, blackStyle, rows = i+1 , cols = c(2,3))
+    }
+
+    ###=======================================
+
+    # apply LD color conditional formatting
+    style_high_LD <- createStyle(fontColour = "#9C0006", bgFill = "#FFC7CE")
+    style_low_LD <- createStyle(fontColour = "#948A54", bgFill = "#F2DCDB")
+    number_style <- createStyle(numFmt = "0.000",halign = "center")
+
+
+    conditionalFormatting(wb, thisSheetName,
+                          cols = 9,
+                          rows = 2:rowCount,
+                          rule = ">=0.8",
+                          style = style_high_LD)
+
+    conditionalFormatting(wb, thisSheetName,
+                          cols = 9,
+                          rows = 2:rowCount,
+                          rule = "<0.8",
+                          style = style_low_LD)
+
+    addStyle(wb, thisSheetName, number_style, rows = 2:rowCount , cols = 9)
+    addStyle(wb, thisSheetName, number_style, rows = 2:rowCount , cols = 8)
+    ###=======================================
+
+
+    saveWorkbook(wb, fileName)
+
+    print_and_log(sprintf('File saved: %s',fileName), display=FALSE)
+
+  }
+  else
+  {
+
+    tryCatch({
+
+      wb <- loadWorkbook(fileName)
+      addWorksheet(wb = wb, sheetName = thisSheetName)
+      setColWidths(wb, sheet = thisSheetName, cols = 1:colCount, widths = "auto")
+
+      freezePane(wb, sheet = thisSheetName, firstRow = TRUE)
+      addFilter(wb, sheet = thisSheetName, cols = c(1,2), rows = 1)
+
+      writeData(wb = wb,
+                sheet = thisSheetName,
+                x = output,
+                colNames = TRUE,
+                rowNames = FALSE,
+                headerStyle = headerStyle)
+
+      if(addFirst)
+      {
+        sheet.count <- length(openxlsx::getSheetNames(fileName))
+        worksheetOrder(wb) <- c(sheet.count+1,seq(sheet.count))
+      }
+
+      saveWorkbook(wb = wb, file = fileName, overwrite = TRUE)
+      print_and_log(sprintf('Data sheet added to: %s',fileName),display=FALSE)
+
+    },
+    error = function(err){
+      print(err)
+    })
+  }
+}
+
+appendXLSXfile_stringdbstandalone <- function(output,thisSheetName,fileName,addFirst = FALSE)
+{
+  # styles
+  #===========
+  headerStyle <- createStyle(
+    fontSize = 12,
+    fontColour = "white",
+    fgFill = "#4F81BD",
+    halign = "center",
+    textDecoration = "bold"
+  )
+
+  centerAlign <- createStyle(halign = "center")
+
+  #=========================================
+  if(!is.data.table(output))
+    setDT(output)
+  #this.output <- as.data.table(output)
+  rowCount <- nrow(output)+1
+  colCount <- ncol(output)
+
+  if(!file.exists(fileName))
+  {
+    wb <- createWorkbook()
+    addWorksheet(wb, thisSheetName)
+    setColWidths(wb, sheet = thisSheetName, cols = 1:colCount, widths = "auto")
+    writeData(wb, thisSheetName, output, headerStyle = headerStyle)
+    freezePane(wb, sheet = thisSheetName, firstRow = TRUE)
+    addFilter(wb, sheet = thisSheetName, cols = c(1,2), rows = 1)
+
+    saveWorkbook(wb, fileName)
+
+    print_and_log(sprintf('File saved: %s',fileName), display=FALSE)
+
+  }
+  else
+  {
+
+    tryCatch({
+
+      wb <- loadWorkbook(fileName)
+      addWorksheet(wb = wb, sheetName = thisSheetName)
+      setColWidths(wb, sheet = thisSheetName, cols = 1:colCount, widths = "auto")
+
+      freezePane(wb, sheet = thisSheetName, firstRow = TRUE)
+      addFilter(wb, sheet = thisSheetName, cols = c(1,2), rows = 1)
+
+      writeData(wb = wb,
+                sheet = thisSheetName,
+                x = output,
+                colNames = TRUE,
+                rowNames = FALSE,
+                headerStyle = headerStyle)
+
+      if(addFirst)
+      {
+        sheet.count <- length(openxlsx::getSheetNames(fileName))
+        worksheetOrder(wb) <- c(sheet.count+1,seq(sheet.count))
+      }
+
+      saveWorkbook(wb = wb, file = fileName, overwrite = TRUE)
+      print_and_log(sprintf('Data sheet added to: %s',fileName),display=FALSE)
+
+    },
+    error = function(err){
+      print(err)
+    })
+  }
+}
+
+appendXLSX_eqtl_report <- function(output,eqtl.cluster.report,fileName)
+{
+  # styles
+  #===========
+  headerStyle <- createStyle(
+    fontSize = 12,
+    fontColour = "white",
+    fgFill = "#4F81BD",
+    halign = "center",
+    textDecoration = "bold"
+  )
+
+  centerAlign <- createStyle(halign = "center")
+
+  #=========================================
+  if(!is.data.table(output))
+    setDT(output)
+  #this.output <- as.data.table(output)
+  rowCount <- nrow(output)+1
+  colCount <- ncol(output)
+
+
+  #=========================================
+  a1 <- output[,.N,by=rsId]
+  names(a1) <- c('Variant','Assoc. count')
+  setorder(a1,-'Assoc. count')
+
+  a2 <- output[,.N,by=Gene]
+  names(a2) <- c('Gene','Assoc. count')
+  setorder(a2,-'Assoc. count')
+
+  a3 <- output[,.N,by=eQTL_group]
+  names(a3) <- c('eQTL_group','Assoc. count')
+  setorder(a3,-'Assoc. count')
+
+  #=========================================
+
+  tryCatch({
+
+    wb <- loadWorkbook(fileName)
+
+    # Add a worksheet to the workbook
+    addWorksheet(wb, "eQTL report")
+
+    addStyle(wb, sheet = "eQTL report", style = centerAlign, cols = c(2,6,10),rows = 1:250,gridExpand = TRUE)  # Center align column 2
+
+    writeData(wb, "eQTL report", a1, startCol = 1, startRow = 1,headerStyle = headerStyle)
+    writeData(wb, "eQTL report", a2, startCol = 5, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+    writeData(wb, "eQTL report", a3, startCol = 9, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+    writeData(wb, "eQTL report", eqtl.cluster.report, startCol = 13, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+
+    setColWidths(wb, sheet = "eQTL report", cols = 1, widths = 15)
+    setColWidths(wb, sheet = "eQTL report", cols = 2, widths = 15)
+
+    setColWidths(wb, sheet = "eQTL report", cols = 5, widths = 25)
+    setColWidths(wb, sheet = "eQTL report", cols = 6, widths = 15)
+
+    setColWidths(wb, sheet = "eQTL report", cols = 9, widths = 45)
+    setColWidths(wb, sheet = "eQTL report", cols = 10, widths = 15)
+
+    setColWidths(wb, sheet = "eQTL report", cols = 13, widths = 25)
+    setColWidths(wb, sheet = "eQTL report", cols = 14, widths = 15)
+
+    setColWidths(wb, sheet = "eQTL report", cols = c(3,4,7,8,11,12), widths = 3)
+
+    freezePane(wb, sheet = "eQTL report", firstRow = TRUE)
+    addFilter(wb, sheet = "eQTL report", cols = c(13,14,15), rows = 1)
+
+
+    saveWorkbook(wb = wb, file = fileName, overwrite = TRUE)
+    print_and_log(sprintf('Data sheet added to: %s',fileName),display=FALSE)
+
+  },
+  error = function(err){
+    print(err)
+  })
+
+}
+
+
+find.nearest.gene <- function(ch, pos, gene.set,nearestGene_type)
+{
+
+  if(is.na(ch) | is.na(pos) | ch=="" | pos =="")
+    return(list("",""))
+
+  # 1- variant is on a gene
+  if(nearestGene_type == 'all')
+    data <- gene.set[chr==ch ,]
+  else
+    data <- gene.set[chr==ch & type== nearestGene_type,]
+
+  data[, on.gene := ifelse(chr==ch & pos>start & pos<end, 1, 0)]
+
+  found <- data[on.gene == 1 ,]
+  if(nrow(found)>0)
+    return(list(paste(found$id,collapse=','),paste(found$name,collapse=',')))
+
+  # 2- intergenic variable
+  outList <- tryCatch({
+
+    data[, dist1 := pos-start]
+    data[, dist2 := pos-end]
+
+    # make sure of start position order
+    #data = data[order(start)]
+    # g1 <- data[,which(dist1<0 & dist2<0)][1]
+    # v1 <- data[(g1-1)]
+    # v2 <- data[g1]
+
+
+    data1 = data[dist1<0 & dist2 <0,]
+    data2 = data[dist1>0 & dist2 >0,]
+
+    v1=data1[order(-dist1)][1,]
+    v2=data2[order(dist2)][1,]
+
+
+    if(abs(v1$dist1) < abs(v2$dist2))
+      return(list(v1$id,v1$name))
+    else
+      return(list(v2$id,v2$name))
+  },warning=function(x){
+    print_and_log(sprintf('Error in gene mapping: %s', x$message),
+                  level='warning',
+                  LF = TRUE,
+                  display=FALSE)
+    return(list("",""))
+  },
+  error=function(x){
+    print_and_log(sprintf('Error in gene mapping: %s', x$message),
+                  level='warning',
+                  LF = TRUE,
+                  display=FALSE)
+    return(list("",""))
+  })
+
+  return(outList)
+}
+
+
+find.regulatory<- function(Chr,Pos,r.set){
+  regulatory <- r.set[chr == Chr & start< Pos & end > Pos,]
+  if(nrow(regulatory) > 0)
+    return(list(paste(regulatory$id,collapse = ','),
+                paste(regulatory$type,collapse = ',')))
+  else
+    return(list('',''))
+}
+
+find.band<- function(Chr,Pos,c.set){
+
+  band <- c.set[chr == Chr & start< Pos & end > Pos, ]
+  if(nrow(band) > 0)
+    return(band$band)
+  else
+    return('')
+}
+
+# DEPRECATED
+# check.core.count <- function(cores) {
+#   avail.cores <- parallel::detectCores()
+#
+#   if (cores > avail.cores)
+#     stop('Selected number of cores is not available.',call. = FALSE)
+# }
+
+
+createRandString<- function() {
+  v = c(sample(0:9, 4, replace = TRUE),
+        sample(letters, 1, replace = TRUE))
+  return(paste0(v,collapse = ""))
+}
+
+checkifOutputIncludesRS <- function(rs,output)
+{
+  if(is.element(rs,output$Linked_SNP))
+    print_and_log(sprintf('Is a proxy of previously checked variant(s): %s',
+                          paste(output[Linked_SNP == rs, gSNP],collapse = ',')), level='warning')
+}
+
+
+generate.report.file <- function(output_list,outputFolder,html.file)
+{
+  tryCatch({
+    options(bitmapType='cairo')
+    rmarkdown::render(system.file("rmd", 'variantReport.Rmd', package = "SNPannotator"),
+                      output_dir = outputFolder,
+                      output_file =  html.file,
+                      quiet = TRUE)
+
+    return(TRUE)
+  },
+  error = function(x) {
+    print_and_log(x$message, level='warning')
+    return(FALSE)
+  }
+  )
+}
+
+
+checkReturnedVariantData <- function(varInfo)
+{
+  #cat('\nData verification for target SNP ... ')
+
+  #correct <- TRUE
+
+  # ldVars <- unlist(varInfo$LDList$variation2)
+
+  l1 <- as.data.table(varInfo$LDList)
+
+  l2 <- data.frame(matrix(NA,length(varInfo$LDlistFull),2))
+  names(l2) <- c('rs_id','syn_id')
+
+  for(i in seq_len(length(varInfo$LDlistFull)))
+  {
+    l2[i,] = c(varInfo$LDlistFull[[i]]$name,
+               paste(varInfo$LDlistFull[[i]]$synonym,collapse = ','))
+  }
+
+  setDT(l2)
+
+
+  l1[,variation2 :=ifelse(variation2 %in% l2$rs_id,
+                          variation2,
+                          l2[grepl(pattern = paste0(variation2,'\\b'), x=syn_id),rs_id]),
+     by = variation2]
+
+
+  return(l1)
+
+  # if(length(ldVars) != length(returnedVars))
+  # {
+  #
+  #   cat(sprintf("RSID count mismatch! in LD list = %s , in information list = %s",
+  #               length(ldVars),
+  #               length(returnedVars)
+  #   ),fill = TRUE)
+  #   correct <- FALSE
+  # }
+
+
+
+
+  # wrongs <- which(ldVars != returnedVars)
+  #
+  # if(length(wrongs) > 0)
+  # {
+  #   cat(sprintf("RSID mismatch! in LD list = %s , in information list = %s",
+  #               paste(ldVars[wrongs],collapse = "/"),
+  #               paste(returnedVars[wrongs],collapse = "/")
+  #   ),fill = TRUE)
+  #
+  #   correct <- FALSE
+  # }
+
+  # if(correct)
+  #   cat('done\n\n')
+  # else
+  #   cat('problem found\n\n')
+
+}
+
+
+
+keep_nearest_gene_in_row <- function(gene,geneId) {
+
+  dist_values <- grep("\\(dist=\\d+\\)", gene, value = TRUE)
+
+  nearest <- NULL
+
+  if (length(dist_values) > 0) {
+    values <- trimws(unlist(strsplit(gene, ",")))
+    valuesId <- trimws(unlist(strsplit(geneId, ",")))
+
+    if(length(values) != length(valuesId))
+      return(geneId)
+
+    #no_dist_values <- grep("\\(dist=\\d+\\)", values, value = TRUE, invert = TRUE)
+    dist_labels <- gsub("\\(dist=\\d+\\)", "", dist_values)
+    dist_nums <- as.numeric(sub(".*dist=(\\d+)\\).*", "\\1", values))
+
+    #nearest <- valuesId[which.min(dist_nums)]
+    nearest <- sprintf('%s (%s)',
+                       strsplit(dist_labels,split = ', ')[[1]][which.min(dist_nums)],
+                       valuesId[which.min(dist_nums)])
+    return(nearest)
+  } else {
+    return(geneId)
+  }
+}
+
+get.input.index.table <- function(data)
+{
+  data <- data[gSNP==Linked_SNP,c('#gSNP','gSNP')]
+  return(data)
+}
+
+check_package_version <- function(package_name) {
+  current_version <- packageVersion(package_name)
+
+  available_versions <- available.packages(method = 'auto',repos='https://cloud.r-project.org')
+  latest_version <- available_versions[package_name, "Version"]
+
+  if (current_version < latest_version) {
+    print_and_log(paste("A new version of", package_name, "is available:", latest_version),level = "warning")
+    print_and_log("Please update using install.packages('", package_name, "')",level = "fatal")
+  } else {
+    print_and_log(paste(package_name, "is up to date."))
+    rm(available_versions)
+  }
+}
+
+#' @noRd
+log.package.version <- function()
+{
+  tryCatch(
+    {
+
+      print_and_log('=============== installed packages ================',display=FALSE)
+      x <- installed.packages()
+      x <- as.data.table(x)
+
+      rx <- strsplit(x[Package == "SNPannotator",Imports],',\n')[[1]]
+      for(r in rx)
+      {
+        version <- x[Package == r, Version]
+        print_and_log(sprintf("%s [%s]",r,version),display=FALSE)
+      }
+      print_and_log("===================================================",display=FALSE)
+      print_and_log("",display=FALSE)
+    }
+  )
+
+}
+
+
+#' Merge multiple output files
+#'
+#' This function merges multiple result files into one.
+#'
+#' @param fileName name of the output file.
+#' @return A data table is returned.
+#' @export
+#'
+mergeResultFiles <- function(...,fileName) {
+  dt_list <- list(...)
+
+  if (length(dt_list) == 0) {
+    stop("No data tables provided.")
+  }
+
+  current_id <- 0
+
+  updated_dt_list <- lapply(dt_list, function(dt) {
+    dt_copy <- copy(dt)
+
+    dt_copy[, `#gSNP` := `#gSNP` + current_id ]
+
+    current_id <<- max(dt_copy$`#gSNP`)
+
+    return(dt_copy)
+  })
+
+  merged_dt <- rbindlist(updated_dt_list)
+
+  tryCatch({
+    appendXLSXfile(merged_dt,'All variants',fileName)
+  },
+  warning=function(x){
+    message(x$message)
+  },
+  error=function(x){
+    message(x$message)
+  },finally = function(x){
+    return(merged_dt)
+  })
+
+}
