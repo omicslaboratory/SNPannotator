@@ -4,17 +4,21 @@
 \alias{stringdb_annotation}
 \title{Analyze STRING DB Interactions and perform functional enrichment}
 \usage{
-stringdb_annotation(gene_list, required_score = 700, limit = 0, ...)
+stringdb_annotation(name, gene_list, required_score = 700, limit = 0, ...)
 }
 \arguments{
+\item{name}{A character string specifying a unique identifier for this analysis run.}
+
 \item{gene_list}{A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).}
 
-\item{required_score}{threshold of significance to include an interaction, a number between 0 and 1000.}
+\item{required_score}{Threshold of significance to include an interaction, a number between 0 and 1000.}
 
-\item{limit}{limits the number of interaction partners retrieved per protein, a number between 0 and 100.}
+\item{limit}{Limits the number of interaction partners retrieved per protein, a number between 0 and 100.}
+
+\item{...}{Additional arguments passed to downstream functions for extended customization.}
 }
 \value{
-set of report files, including images, text and excel files containing functional enrichment analysis results
+set of report files, including images, text and excel files containing functional enrichment analysis results.
 }
 \description{
 This function takes a vector of gene symbols, retrieves their interaction partners

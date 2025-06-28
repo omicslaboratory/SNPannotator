@@ -13,8 +13,8 @@ run_annotation(configurationFilePath, verbose = TRUE)
 }
 \value{
 A data table containing all variant information is returned based on the user's selected
-specifications and parameters. Additionally, numerous other report files in various formats,
-including text, HTML, Excel, and image, are saved in the output folder.
+specifications and parameters. Report files in various formats, including text, HTML,
+Excel, and image, are saved in the output folder.
 }
 \description{
 This function receives the path to the configuration file.

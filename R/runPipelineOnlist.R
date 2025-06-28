@@ -6,8 +6,9 @@
 #' @param configurationFilePath Character. The path to the configuration file.
 #' @param verbose Logical. Whether to display messages in the console.
 #' @return A data table containing all variant information is returned based on the user's selected
-#' specifications and parameters. Additionally, numerous other report files in various formats,
-#' including text, HTML, Excel, and image, are saved in the output folder.
+#' specifications and parameters. Report files in various formats, including text, HTML,
+#' Excel, and image, are saved in the output folder.
+#'
 #' @export
 #'
 run_annotation <- function(configurationFilePath, verbose = TRUE) {

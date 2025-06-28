@@ -7,9 +7,8 @@
 demo_annotation()
 }
 \value{
-A data table containing all variant information is returned based on the user's selected
-specifications and parameters. Additionally, numerous other report files in various formats,
-including text, HTML, Excel, and image, are saved in the output folder.
+A data table containing the variant information for testing is returned.
+Report files are also saved in the current working directory.
 }
 \description{
 This function is a demo of the annotation algorithm.

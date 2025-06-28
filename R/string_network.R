@@ -27,13 +27,13 @@ convert_numeric <- function(x)
 #' This function takes a vector of gene symbols, retrieves their interaction partners
 #' from STRING DB, and performs functional enrichment analysis.
 #'
-#' @param name Name for this job.
+#' @param name A character string specifying a unique identifier for this analysis run.
 #' @param gene_list A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).
 #' @param required_score Threshold of significance to include an interaction, a number between 0 and 1000.
 #' @param limit Limits the number of interaction partners retrieved per protein, a number between 0 and 100.
-#' @param ... Arguments passed to other functions.
+#' @param ... Additional arguments passed to downstream functions for extended customization.
 #'
-#' @return set of report files, including images, text and excel files containing functional enrichment analysis results
+#' @return set of report files, including images, text and excel files containing functional enrichment analysis results.
 #' @export
 #'
 stringdb_annotation <- function(name, gene_list, required_score = 700, limit = 0, ...)

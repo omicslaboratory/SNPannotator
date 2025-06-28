@@ -52,7 +52,7 @@ A text-based configuration file that users must edit before running the analysis
 
 ```{r}
 # first, load the library
-Library(SNPannotator)
+library(SNPannotator)
 
 # save the configuration file to a specific folder
 getConfigFile('/home/user/project1/postGWAS')
@@ -68,7 +68,7 @@ getConfigFile('/home/user/project1/postGWAS')
 
 3- Obtain the configuration file from the package using the command `getConfigFile('/path/to/folder')`. It is recommended to copy this file into the newly created folder for easy access. Edit the parameters of this file as needed.
 
-4- Run the annotation pipeline by running `annotate('/path/to/config.ini')`.
+4- Run the annotation pipeline by running `run_annotation('/path/to/config.ini')`.
 
 ---
 
@@ -78,7 +78,7 @@ The steps included in this pipeline are:
 
 - Identifying variants in linkage disequilibrium (LD) with top GWAS hits
 
-- Assessing variant information and their regulatory potential
+- Assessing variant information, deleteriousness and their regulatory characteristics
 
 - Evaluating their impact on gene expression through eQTL analysis
 
@@ -91,6 +91,24 @@ The steps included in this pipeline are:
 
 ## Package functions:
 
+**Please refer to the package manual for detailed information and examples.**
+
+
+### demo_annotation()
+
+This function provides a quick way to test the package by generating a sample output for one variant. Report files are saved in the current working directory.
+
+Example:
+
+```{r}
+
+library(SNPannotator)
+
+demo_annotation()
+
+```
+
+---
 
 ### getConfigFile() 
 
@@ -112,7 +130,7 @@ getConfigFile('/home/user/config.ini')
 
 ---
 
-### annotate() 
+### run_annotation() 
 
 This is the main package function, which receives the path to a configuration file (.ini) for running the parameter.
 
@@ -120,14 +138,13 @@ Function parameters:
 
 -	configurationFilePath, The path to the configuration file.
 
--	verbose, Whether to display messages in the console.
+-	verbose, Whether to display messages in the console, default=TRUE.
 
 
 Example:
 
 ```{r}
-
-annotate('/home/user/analysis/config.ini')
+run_annotation('/home/user/analysis/config.ini')
 ```
 
 ---
@@ -154,9 +171,9 @@ Function parameters:
 Example:
 
 ```{r}
-FindProxy("rs234")
+findProxy("rs234")
 
-FindProxy(c("rs234","rs678"))
+findProxy(c("rs234","rs678"))
 ```
 
 ---
@@ -184,7 +201,31 @@ Function parameters
 Example:
 
 ```{r}
-
 output = pairwiseLD(c('rs234','rs10244533'))
+
+```
+
+---
+
+### stringdb_annotation()
+
+This function takes a vector of gene symbols, retrieves their interaction partners from STRING DB, and performs functional enrichment analysis.
+
+Function parameters
+
+- name A character string specifying a unique identifier for this analysis run.
+
+- gene_list A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).
+
+- required_score Threshold of significance to include an interaction, a number between 0 and 1000.
+
+- limit Limits the number of interaction partners retrieved per protein, a number between 0 and 100.
+
+- ... Additional arguments passed to downstream functions for extended customization.
+
+Example:
+
+```{r}
+stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
 
 ```
