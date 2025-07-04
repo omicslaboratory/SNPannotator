@@ -366,6 +366,7 @@ do.string.analysis <- function(geneList,
 PingSTRING <- function(server)
 {
   print_and_log("Pinging STRING DB server ... ",LF = FALSE)
+  accessible <- TRUE
 
   tryCatch(
     {
@@ -383,14 +384,22 @@ PingSTRING <- function(server)
       }else
       {
         print_and_log('not accessible.', level='fatal')
+        accessible <- FALSE
+
       }
     }, error = function(cond) {
       print_and_log(paste('Error occured in STRING ping.',cond$message), level='fatal')
+      accessible <- FALSE
+
     },
     warning = function(cond) {
       print_and_log(paste('Warning occured in STRING ping.',cond$message), level='warning')
+      accessible <- FALSE
+
     }
   )
+
+  return(accessible)
 }
 
 

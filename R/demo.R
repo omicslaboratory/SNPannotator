@@ -221,15 +221,18 @@ demo_annotation <- function() {
   ######################
   ##### ping APIs ######
   ######################
+  .SNPannotator$pingEnsembl <- NULL
+  .SNPannotator$PingSTRING <- NULL
+  .SNPannotator$PingEBI <- NULL
 
   if(!is.null(ensembl.server))
-    pingEnsembl(ensembl.server)
+    .SNPannotator$pingEnsembl <- pingEnsembl(ensembl.server)
 
   if(!is.null(ebi.server))
-    PingEBI(ebi.server)
+    .SNPannotator$PingEBI <- PingEBI(ebi.server)
 
   if(!is.null(string.server))
-    PingSTRING(string.server)
+    .SNPannotator$PingSTRING <- PingSTRING(string.server)
 
 
   ######################
@@ -399,7 +402,7 @@ demo_annotation <- function() {
     ############
 
     print_and_log('Checking eQTL data ...', LF = FALSE)
-    if(!is.null(ebi.server))
+    if(!is.null(ebi.server) && .SNPannotator$PingEBI == TRUE)
     {
       ebi.tab <- find.eqtl.ebi(ebi.server,
                                tab[tab$LD >0.8,]$Linked_SNP, # only find eQTL for top SNP and linked snps with LD > 0.8
@@ -494,7 +497,7 @@ demo_annotation <- function() {
   }
 
 
-  if(!is.null(string.server) && !is.null(string_gene_list))
+  if(!is.null(string.server) && !is.null(string_gene_list) && .SNPannotator$PingSTRING == TRUE)
   {
 
     string.report.list <- do.string.analysis(string_gene_list,

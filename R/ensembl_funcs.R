@@ -9,6 +9,8 @@
 #'
 pingEnsembl <- function(server)
 {
+  accessible <- TRUE
+
   tryCatch(
     {
       if(exists('print_and_log'))
@@ -27,22 +29,30 @@ pingEnsembl <- function(server)
       if(exists('print_and_log'))
       {
         if(response$ping == 1)
+        {
           print_and_log("accessible.")
-        else
+        } else {
           print_and_log("not accessible.", level='fatal')
+          accessible <- FALSE
+        }
       }
       else
       {
         if(response$ping == 1)
+        {
           message("accessible.")
-        else
+        } else{
           stop("not accessible.")
+          accessible <- FALSE
+        }
 
       }
 
     },
     error = function(err) stop(err$message,call. = FALSE)
   )
+
+  return(accessible)
 }
 
 #' List population from human database (1000 Genomes project)

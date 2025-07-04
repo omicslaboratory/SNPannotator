@@ -17,7 +17,7 @@ print_and_log <- function(a_message,
                           display = TRUE,
                           LF=TRUE) {
 
-  tryCatch({
+  #tryCatch({
     # 1- display in console
     if (.SNPannotator$verbose==TRUE && display == TRUE)
       message(a_message, appendLF = LF)
@@ -34,15 +34,15 @@ print_and_log <- function(a_message,
       flog.warn(msg = a_message, name = "SNPannotator_logger")
     } else if (level == "fatal") {
       flog.fatal(msg = a_message, name = "SNPannotator_logger")
-      stop()
+      stop( "Pipeline stopped.", call. = FALSE)
     } else {
       message('unknown log level is defined.')
     }
-  },
-  warning = function(x){
-    message(paste("Warning in logger: " ,x$message))
-  },
-  error = function(x){
-    message(paste("Error in logger: " ,x$message))
-  })
+  # },
+  # warning = function(x){
+  #   message(paste("Warning in logger: " ,x$message))
+  # },
+  # error = function(x){
+  #   message(paste("Error in logger: " ,x$message))
+  # })
 }

@@ -7,6 +7,8 @@ PingEBI <- function(server)
 {
   print_and_log("Pinging EBI server ... ",LF = FALSE)
 
+  accessible <- TRUE
+
   tryCatch(
     {
       r <- GET(server, content_type("application/json"))
@@ -17,14 +19,19 @@ PingEBI <- function(server)
       }else
       {
         print_and_log('not accessible.', level='fatal')
+        accessible <- FALSE
       }
     }, error = function(cond) {
       print_and_log(paste('Error occured in EBI ping.',cond$message), level='fatal')
+        accessible <- FALSE
     },
     warning = function(cond) {
       print_and_log(paste('Warning occured in EBI ping.',cond$message), level='warning')
+        accessible <- FALSE
     }
   )
+
+  return(accessible)
 }
 
 get.EBI.tissues <- function(server)
