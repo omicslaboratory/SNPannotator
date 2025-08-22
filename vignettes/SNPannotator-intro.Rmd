@@ -178,7 +178,7 @@ findProxy(c("rs234","rs678"))
 
 ---
 
-### pairwiseLD() 
+### findPairwiseLD() 
 
 This function computes the linkage disequilibrium (LD) between the selected variants using data from the Ensembl website.
 
@@ -201,7 +201,63 @@ Function parameters
 Example:
 
 ```{r}
-output = pairwiseLD(c('rs234','rs10244533'))
+output = findPairwiseLD(c('rs234','rs10244533'))
+
+```
+
+---
+
+### findGenomicPos() 
+
+This function retrieves variant information from the GTEx portal using either an rsID or a variant ID formatted as CHR_POS_REF_ALT. If an rsID is provided, the function returns the corresponding genomic positions in both GRCh37 and GRCh38 builds. When searching for an rsID based on genomic position, the position parameter should be specified according to the GRCh38 reference genome.
+
+Function parameters
+
+-	id, Character string representing the rsID (e.g., "rs12345") or the variant ID
+
+-	type, Character string specifying the type of query. Must be either "rsid" or "varid".
+
+-	file_path, path to a file for saving results as Excell spreadsheet.
+
+
+Example:
+
+```{r}
+findGenomicPos('rs121')
+
+findGenomicPos('7_24898067_A_G', type = "varid", file_path  = "output.xlsx")
+
+```
+
+---
+
+### findRSID() 
+
+This function retrieves variant information from Ensembl based on the specified genomic position. It takes the chromosome number, start position, and end position as input parameters and searches for variants within this window, using the specified genomic build. If only the start position is provided, the function automatically sets the end position equal to the start position. This is particularly relevant for SNP variants, where the start and end positions are the same. The function returns all variants found within the defined window.
+
+Function parameters
+
+-	chromosome, Numeric, specifying the chromosome number.
+
+-	start_position, Numeric, specifying the starting base pair position.
+
+-	end_position, Numeric, specifying the ending base pair position.
+
+-	build, Numeric, specifying the genomic build, default value is 38.
+
+-	file_path, Character, path to a file for saving results as Excell spreadsheet.
+
+
+
+Example:
+
+```{r}
+
+findRSID(15, 79845218)
+
+findRSID(15, 79845218 , 79845238, file_path = "output.xlsx")
+
+findRSID(15, 80137560 ,build= "37")
 
 ```
 

@@ -231,38 +231,57 @@ loadConfigurationFile = function(path, demo = FALSE)
     #   configs$GTEX$pvalue_threshold = 5E-8
 
     ##
-    ## eQTL_Catalogue
-    if(is.null(configs$eQTL_Catalogue$eQTL))
-      configs$eQTL_Catalogue$eQTL <- FALSE
+    ## QTL
+    if(is.null(configs$QTL$eQTL))
+      configs$QTL$eQTL <- FALSE
     else
-      configs$eQTL_Catalogue$eQTL = as.logical(toupper(trimws(configs$eQTL_Catalogue$eQTL)))
+      configs$QTL$eQTL = as.logical(toupper(trimws(configs$QTL$eQTL)))
 
-    if(is.na(configs$eQTL_Catalogue$eQTL))
+    if(is.na(configs$QTL$eQTL))
     {
       message('Unknown input found for eQTL parameter.')
       return(NULL)
     }
 
-    configs$eQTL_Catalogue$server = NULL
-    if(configs$eQTL_Catalogue$eQTL)
-      configs$eQTL_Catalogue$server = .SNPannotator$EBI_eqtl_API
+    if(is.null(configs$QTL$sQTL))
+      configs$QTL$sQTL <- FALSE
+    else
+      configs$QTL$sQTL = as.logical(toupper(trimws(configs$QTL$sQTL)))
+
+    if(is.na(configs$QTL$sQTL))
+    {
+      message('Unknown input found for sQTL parameter.')
+      return(NULL)
+    }
+
+    configs$QTL$server = NULL
+
+    if(configs$QTL$eQTL || configs$QTL$sQTL)
+      configs$QTL$server <- switch (configs$general$build,
+                                      'grch37' = .SNPannotator$EBI_eqtl_API,
+                                      'grch38' = .SNPannotator$GTEx_eqtl_API)
+
+    if(configs$QTL$sQTL && configs$general$build =='grch37') ## GTEx only accepts variant id in build 38 , based on genomic position
+    {
+      stop('sQTL information is currently available for build38 only.\n')
+    }
 
 
     # DEPRECATED - might want to search all variants
-    # if(configs$eQTL_Catalogue$eQTL && is.null(configs$eQTL_Catalogue$eQTL_group))
+    # if(configs$QTL$eQTL && is.null(configs$QTL$eQTL_group))
     # {
     #   message('eQTL_group not provided.')
     #   return(NULL)
     # }
 
 
-    if(!is.null(configs$eQTL_Catalogue$pvalue_threshold) &&
-       !is.na(as.numeric(configs$eQTL_Catalogue$pvalue_threshold)) &&
-       as.numeric(configs$eQTL_Catalogue$pvalue_threshold) < 1 &&
-       as.numeric(configs$eQTL_Catalogue$pvalue_threshold) > 0)
-      configs$eQTL_Catalogue$pvalue_threshold = as.numeric(configs$eQTL_Catalogue$pvalue_threshold)
+    if(!is.null(configs$QTL$pvalue_threshold) &&
+       !is.na(as.numeric(configs$QTL$pvalue_threshold)) &&
+       as.numeric(configs$QTL$pvalue_threshold) < 1 &&
+       as.numeric(configs$QTL$pvalue_threshold) > 0)
+      configs$QTL$pvalue_threshold = as.numeric(configs$QTL$pvalue_threshold)
     else
-      configs$eQTL_Catalogue$pvalue_threshold = 5E-8
+      configs$QTL$pvalue_threshold = 5E-2
 
     ## SRTING DB
     if(is.null(configs$STRING_DB$network_image))
@@ -409,8 +428,10 @@ loadConfigurationFile = function(path, demo = FALSE)
     configs$paths$output.rds.file = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'.rds'))
 
     # file for saving eQTL data from EBI as plain text
-    configs$paths$output.ebi.file = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_eQTL.tsv'))
-    configs$paths$output.ebi.graph = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_eQTL.png'))
+    configs$paths$output.eqtl.file = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_eQTL.tsv'))
+    configs$paths$output.eqtl.graph = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_eQTL.png'))
+    configs$paths$output.sqtl.file = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_sQTL.tsv'))
+    configs$paths$output.sqtl.graph = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_sQTL.png'))
 
     configs$paths$output.gwascatalog.graph = file.path(configs$general$outputFolder, paste0(configs$general$projectName,'_gwascatalog.png'))
 
@@ -443,8 +464,11 @@ loadConfigurationFile = function(path, demo = FALSE)
     configs$paths$output.xlsx.file = normalizePath(configs$paths$output.xlsx.file, mustWork = FALSE)
     configs$paths$output.rds.file = normalizePath(configs$paths$output.rds.file, mustWork = FALSE)
 
-    configs$paths$output.ebi.file = normalizePath(configs$paths$output.ebi.file, mustWork = FALSE)
-    configs$paths$output.ebi.graph = normalizePath(configs$paths$output.ebi.graph, mustWork = FALSE)
+    configs$paths$output.eqtl.file = normalizePath(configs$paths$output.eqtl.file, mustWork = FALSE)
+    configs$paths$output.eqtl.graph = normalizePath(configs$paths$output.eqtl.graph, mustWork = FALSE)
+    configs$paths$output.sqtl.file = normalizePath(configs$paths$output.sqtl.file, mustWork = FALSE)
+    configs$paths$output.sqtl.graph = normalizePath(configs$paths$output.sqtl.graph, mustWork = FALSE)
+
     configs$paths$output.gwascatalog.graph = normalizePath(configs$paths$output.gwascatalog.graph, mustWork = FALSE)
 
     configs$paths$output.html.file = normalizePath(configs$paths$output.html.file, mustWork = FALSE)

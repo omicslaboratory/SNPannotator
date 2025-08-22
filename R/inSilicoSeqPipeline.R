@@ -30,10 +30,17 @@ inSilicoSeqPipeline <- function(rsID,
 
   #
   if(addLinkedVars)
+  {
     VarLDList <- getVariantLDs(rsID,server,database, window_size, r2)
+  }
+  else
+  {
+    print_and_log('Proxy variants... skipped.')
+    return(varInfo) # return if LDlist is not asked for
+  }
 
-
-
+  #=========================================
+  # if LDlist is wanted and found something
   if(!exists('VarLDList') || is.null(VarLDList))
   {
     varInfo$LDcount <- 0
@@ -84,7 +91,7 @@ inSilicoSeqPipeline <- function(rsID,
 
     #### method 2 ####
     # Split IDs into chunks of 100
-    id_chunks <- split_list(proxy.IDs, 250)
+    id_chunks <- split_list(proxy.IDs, 150)
 
     # Process each chunk separately and combine results
     proxylist <- Reduce(c, lapply(seq_along(id_chunks), function(i) {

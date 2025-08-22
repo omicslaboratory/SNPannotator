@@ -120,7 +120,7 @@ makeReport_CADD <- function(var.data) {
     cat('<br/><span class="topic">Associated phenotypes</span>')
     if(!is.null(ncol(assoc)))
     {
-
+      
       cat(kableExtra::kable(assoc,format = 'html', col.names = NULL,booktabs = TRUE) %>% 
             kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
                                       full_width = F, 
@@ -135,7 +135,7 @@ makeReport_CADD <- function(var.data) {
                                       full_width = F,
                                       position = "left"))
     }
-
+    
   }
   
   cat('<br/>')
@@ -264,10 +264,44 @@ cat('<b>Window-size:</b> ',output_list$config$general$window_size,'Kb\n',fill=TR
 cat("<hr class='double-line'/>")
 
 
-cat('<h4>Input variants</h4>\n')
+cat('<h4>Variants information</h4>\n')
 cat('<ol>')
 cat(vt$link)
 cat('</ol>')
+
+cat('<h4>Figures</h4>\n')
+cat('<ul>')
+if(!is.null(output_list$config$paths$output.gwascatalog.graph) && 
+   file.exists(output_list$config$paths$output.gwascatalog.graph))
+  cat('<li><a href="#trait_association_network">Variant-trait association network</a></li>')
+
+if(!is.null(output_list$config$paths$output.eqtl.graph) && 
+   file.exists(output_list$config$paths$output.eqtl.graph))
+  cat('<li><a href="#eqtl_association_network">eQTL association network</a></li>')
+
+if(!is.null(output_list$config$paths$output.sqtl.graph) && 
+   file.exists(output_list$config$paths$output.sqtl.graph))
+  cat('<li><a href="#sqtl_association_network">sQTL association network</a></li>')
+
+if(!is.null(output_list$config$paths$output.string.network.image.file) && 
+   file.exists(output_list$config$paths$output.string.network.image.file))
+  cat('<li><a href="#string_result">Interaction network</a></li>')
+
+
+if((!is.null(output_list$config$paths$output.string.enrichment.image.file.diseases) &&
+    file.exists(output_list$config$paths$output.string.enrichment.image.file.diseases)) ||
+   (!is.null(output_list$config$paths$output.string.enrichment.image.file.tissues) &&
+    file.exists(output_list$config$paths$output.string.enrichment.image.file.tissues)) ||
+   (!is.null(output_list$config$paths$output.string.enrichment.image.file.function) &&
+    file.exists(output_list$config$paths$output.string.enrichment.image.file.function)) ||
+   (!is.null(output_list$config$paths$output.string.enrichment.image.file.process) &&
+    file.exists(output_list$config$paths$output.string.enrichment.image.file.process)) ||
+   (!is.null(output_list$config$paths$output.string.enrichment.image.file.component) &&
+    file.exists(output_list$config$paths$output.string.enrichment.image.file.component))
+)
+  cat('<li><a href="#enrichment_visualization">Functional enrichment visualizations</a></li>')
+
+cat('</ul>')
 
 cat("<hr class='teal'/>")
 
@@ -279,6 +313,75 @@ for(i in seq_len(varCount))
   makeReport_CADD(var.data)
 }
 
+
+## trait-association image
+
+if(!is.null(output_list$config$paths$output.gwascatalog.graph) && 
+   file.exists(output_list$config$paths$output.gwascatalog.graph))
+{
+  
+  cat('<div id="trait_association_network"><h3>Variant-trait association network</h3></div>\n')
+  cat('<p>Right-click to open full-size image in new tab or save.</p>')
+  
+  img_data_gwascat <- knitr::image_uri(output_list$config$paths$output.gwascatalog.graph)
+  
+  htmltools::tagList(
+    # htmltools::a(
+    #   href = img_data_gwascat,
+    #   target = "_blank",
+    htmltools::img(src = img_data_gwascat, 
+                   alt = 'trait_association_network', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='teal'/>")
+  )
+  
+}
+
+## eqtl image
+
+if(!is.null(output_list$config$paths$output.eqtl.graph) && 
+   file.exists(output_list$config$paths$output.eqtl.graph))
+{
+  
+  cat('<div id="eqtl_association_network"><h3>eQTL association network</h3></div>\n')
+  cat('<p>Right-click to open full-size image in new tab or save.</p>')
+  
+  img_data_eqtl <- knitr::image_uri(output_list$config$paths$output.eqtl.graph)
+  
+  htmltools::tagList(
+    # htmltools::a(
+    #   href = img_data_eqtl,
+    #   target = "_blank",
+    htmltools::img(src = img_data_eqtl, 
+                   alt = 'eqtl_association_network', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='teal'/>")
+  )
+  
+}
+## sqtl image
+
+if(!is.null(output_list$config$paths$output.sqtl.graph) && 
+   file.exists(output_list$config$paths$output.sqtl.graph))
+{
+  
+  cat('<div id="sqtl_association_network"><h3>sQTL association network</h3></div>\n')
+  cat('<p>Right-click to open full-size image in new tab or save.</p>')
+  
+  img_data_sqtl <- knitr::image_uri(output_list$config$paths$output.sqtl.graph)
+  
+  htmltools::tagList(
+    # htmltools::a(
+    #   href = img_data_eqtl,
+    #   target = "_blank",
+    htmltools::img(src = img_data_sqtl, 
+                   alt = 'sqtl_association_network', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='teal'/>")
+  )
+  
+}
+
 #### STRING DB plots
 
 ## network image
@@ -287,49 +390,88 @@ if(!is.null(output_list$config$STRING_DB$server))
   cat('<h3>STRING DB report</h3>\n')
 
 if(output_list$config$STRING_DB$network_image == TRUE)
-  cat('<h4>Interaction network</h4>\n')
+{
+  cat('<div id="string_result"><h4>Interaction network</h4></div>\n')
+  cat('<p>Right-click to open full-size image in new tab or save.</p>')
+}
 
 if(!is.null(output_list$config$paths$output.string.network.image.file) & 
    file.exists(output_list$config$paths$output.string.network.image.file))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.network.image.file), 
-                 alt = 'ineteraction_network', 
-                 style = 'width:100%')
-
+{
+  
+  img_data_string <- knitr::image_uri(output_list$config$paths$output.string.network.image.file)
+  
+  htmltools::tagList(
+    #htmltools::a(
+    #  href = img_data_string,
+    # target = "_blank",
+    htmltools::img(src = img_data_string, 
+                   alt = 'ineteraction_network', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+  
+}
 ## enrichment plots
 ## 1
 if(output_list$config$STRING_DB$enrichment_image == TRUE)
-  cat('<h4>Functional enrichment visualizations</h4>\n')
-
-if(!is.null(output_list$config$paths$output.string.network.image.file) & 
-   file.exists(output_list$config$paths$output.string.enrichment.image.file.function))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.function), 
-                 alt = 'function_enrichment', 
-                 style = 'width:100%')
-
-
-if(!is.null(output_list$config$paths$output.string.enrichment.image.file.process) & 
-   file.exists(output_list$config$paths$output.string.enrichment.image.file.process))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.process), 
-                 alt = 'process_enrichment', 
-                 style = 'width:100%')
-
-if(!is.null(output_list$config$paths$output.string.enrichment.image.file.component) & 
-   file.exists(output_list$config$paths$output.string.enrichment.image.file.component))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.component), 
-                 alt = 'component_enrichment', 
-                 style = 'width:100%')
+  cat('<div id="enrichment_visualization"><h4>Functional enrichment visualizations</h4></div>\n')
 
 if(!is.null(output_list$config$paths$output.string.enrichment.image.file.diseases) & 
    file.exists(output_list$config$paths$output.string.enrichment.image.file.diseases))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.diseases), 
-                 alt = 'disease_enrichment', 
-                 style = 'width:100%')
+{
+  htmltools::tagList(
+    htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.diseases), 
+                   alt = 'disease_enrichment', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+}
+
 
 if(!is.null(output_list$config$paths$output.string.enrichment.image.file.tissues) & 
    file.exists(output_list$config$paths$output.string.enrichment.image.file.tissues))
-  htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.tissues), 
-                 alt = 'tissue_enrichment', 
-                 style = 'width:100%')
+{
+  htmltools::tagList(
+    htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.tissues), 
+                   alt = 'tissue_enrichment', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+}
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.function) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.function))
+{
+  htmltools::tagList( 
+    htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.function), 
+                   alt = 'function_enrichment', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+}
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.process) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.process))
+{
+  htmltools::tagList(
+    htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.process), 
+                   alt = 'process_enrichment', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+}
+
+if(!is.null(output_list$config$paths$output.string.enrichment.image.file.component) & 
+   file.exists(output_list$config$paths$output.string.enrichment.image.file.component))
+{
+  htmltools::tagList(
+    htmltools::img(src = knitr::image_uri(output_list$config$paths$output.string.enrichment.image.file.component), 
+                   alt = 'component_enrichment', 
+                   style = 'width:100%'),
+    htmltools::HTML("<br/><hr class='thin'/>")
+  )
+}
 
 
 if(!is.null(output_list$STRING_webLink))

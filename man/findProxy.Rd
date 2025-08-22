@@ -7,7 +7,7 @@
 findProxy(
   rslist,
   file = NULL,
-  build = "37",
+  build = "38",
   db = "1000GENOMES:phase_3:EUR",
   window_size = 500,
   r2 = 0.8
@@ -18,7 +18,7 @@ findProxy(
 
 \item{file}{Path to the Excel file for saving search results.}
 
-\item{build}{Genome build. Either 37 or 38. default: 37}
+\item{build}{Genome build. Either 37 or 38. default: 38}
 
 \item{db}{The population database for calculating LD scores.
 This can be found using \code{Ensembl.Databases()} function. default: 1000GENOMES:phase_3:EUR}

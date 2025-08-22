@@ -17,6 +17,9 @@ print_and_log <- function(a_message,
                           display = TRUE,
                           LF=TRUE) {
 
+  if(is.null(a_message))
+    return()
+
   #tryCatch({
     # 1- display in console
     if (.SNPannotator$verbose==TRUE && display == TRUE)

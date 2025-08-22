@@ -116,18 +116,18 @@ appendXLSXfile <- function(output,thisSheetName,fileName,addFirst = FALSE)
 
 
     conditionalFormatting(wb, thisSheetName,
-                          cols = 9,
+                          cols = 10,
                           rows = 2:rowCount,
                           rule = ">=0.8",
                           style = style_high_LD)
 
     conditionalFormatting(wb, thisSheetName,
-                          cols = 9,
+                          cols = 10,
                           rows = 2:rowCount,
                           rule = "<0.8",
                           style = style_low_LD)
 
-    addStyle(wb, thisSheetName, number_style, rows = 2:rowCount , cols = 9)
+    addStyle(wb, thisSheetName, number_style, rows = 2:rowCount , cols = 10)
     addStyle(wb, thisSheetName, number_style, rows = 2:rowCount , cols = 8)
     ###=======================================
 
@@ -149,6 +149,14 @@ appendXLSXfile <- function(output,thisSheetName,fileName,addFirst = FALSE)
       freezePane(wb, sheet = thisSheetName, firstRow = TRUE)
       addFilter(wb, sheet = thisSheetName, cols = c(1,2), rows = 1)
 
+      # convert pvalue to numeric for correct format
+      if(is.element("p_value",names(output)))
+      {
+        output$p_value <- as.numeric(output$p_value)
+      }
+
+
+      # save
       writeData(wb = wb,
                 sheet = thisSheetName,
                 x = output,
@@ -162,8 +170,18 @@ appendXLSXfile <- function(output,thisSheetName,fileName,addFirst = FALSE)
         worksheetOrder(wb) <- c(sheet.count+1,seq(sheet.count))
       }
 
+      # add scietific style to pvalue column
+      if(is.element("p_value",names(output)))
+      {
+        scientific_style <- createStyle(numFmt = "0.0E+00")
+        pval_col <- which(names(output) == "p_value") # find pvalue column to add scientific style
+        output$p_value <- as.numeric(output$p_value)
+        addStyle(wb, sheet = thisSheetName, style = scientific_style,
+                 cols = pval_col, rows = 2:(nrow(output) + 1), gridExpand = TRUE,stack = TRUE)
+      }
+
       saveWorkbook(wb = wb, file = fileName, overwrite = TRUE)
-      print_and_log(sprintf('Data sheet added to: %s',fileName),display=FALSE)
+      print_and_log(sprintf('Data sheet "%s" added to: %s',thisSheetName,fileName),display=FALSE)
 
     },
     error = function(err){
@@ -242,7 +260,7 @@ appendXLSXfile_stringdbstandalone <- function(output,thisSheetName,fileName,addF
   }
 }
 
-appendXLSX_eqtl_report <- function(output,eqtl.cluster.report,fileName)
+appendXLSX_qtl_report <- function(output,sheetName,eqtl.cluster.report,fileName)
 {
   # styles
   #===========
@@ -265,7 +283,7 @@ appendXLSX_eqtl_report <- function(output,eqtl.cluster.report,fileName)
 
 
   #=========================================
-  a1 <- output[,.N,by=rsId]
+  a1 <- output[,.N,by=rsid]
   names(a1) <- c('Variant','Assoc. count')
   setorder(a1,-'Assoc. count')
 
@@ -273,8 +291,8 @@ appendXLSX_eqtl_report <- function(output,eqtl.cluster.report,fileName)
   names(a2) <- c('Gene','Assoc. count')
   setorder(a2,-'Assoc. count')
 
-  a3 <- output[,.N,by=eQTL_group]
-  names(a3) <- c('eQTL_group','Assoc. count')
+  a3 <- output[,.N,by=Tissue]
+  names(a3) <- c('Tissue','Assoc. count')
   setorder(a3,-'Assoc. count')
 
   #=========================================
@@ -284,31 +302,32 @@ appendXLSX_eqtl_report <- function(output,eqtl.cluster.report,fileName)
     wb <- loadWorkbook(fileName)
 
     # Add a worksheet to the workbook
-    addWorksheet(wb, "eQTL report")
+    addWorksheet(wb, sheetName)
 
-    addStyle(wb, sheet = "eQTL report", style = centerAlign, cols = c(2,6,10),rows = 1:250,gridExpand = TRUE)  # Center align column 2
+    addStyle(wb, sheet = sheetName, style = centerAlign, cols = c(2,6,10),rows = 1:250,gridExpand = TRUE)  # Center align column 2
 
-    writeData(wb, "eQTL report", a1, startCol = 1, startRow = 1,headerStyle = headerStyle)
-    writeData(wb, "eQTL report", a2, startCol = 5, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
-    writeData(wb, "eQTL report", a3, startCol = 9, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
-    writeData(wb, "eQTL report", eqtl.cluster.report, startCol = 13, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+    writeData(wb, sheetName, a1, startCol = 1, startRow = 1,headerStyle = headerStyle)
+    writeData(wb, sheetName, a2, startCol = 5, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+    writeData(wb, sheetName, a3, startCol = 9, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
+    writeData(wb, sheetName, eqtl.cluster.report, startCol = 13, startRow = 1,headerStyle = headerStyle)  # Adjust startCol to place it side by side
 
-    setColWidths(wb, sheet = "eQTL report", cols = 1, widths = 15)
-    setColWidths(wb, sheet = "eQTL report", cols = 2, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 1, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 2, widths = 15)
 
-    setColWidths(wb, sheet = "eQTL report", cols = 5, widths = 25)
-    setColWidths(wb, sheet = "eQTL report", cols = 6, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 5, widths = 25)
+    setColWidths(wb, sheet = sheetName, cols = 6, widths = 15)
 
-    setColWidths(wb, sheet = "eQTL report", cols = 9, widths = 45)
-    setColWidths(wb, sheet = "eQTL report", cols = 10, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 9, widths = 35)
+    setColWidths(wb, sheet = sheetName, cols = 10, widths = 15)
 
-    setColWidths(wb, sheet = "eQTL report", cols = 13, widths = 25)
-    setColWidths(wb, sheet = "eQTL report", cols = 14, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 13, widths = 25)
+    setColWidths(wb, sheet = sheetName, cols = 14, widths = 15)
+    setColWidths(wb, sheet = sheetName, cols = 15, widths = 15)
 
-    setColWidths(wb, sheet = "eQTL report", cols = c(3,4,7,8,11,12), widths = 3)
+    setColWidths(wb, sheet = sheetName, cols = c(3,4,7,8,11,12), widths = 3)
 
-    freezePane(wb, sheet = "eQTL report", firstRow = TRUE)
-    addFilter(wb, sheet = "eQTL report", cols = c(13,14,15), rows = 1)
+    freezePane(wb, sheet = sheetName, firstRow = TRUE)
+    addFilter(wb, sheet = sheetName, cols = c(1,5,9,13), rows = 1)
 
 
     saveWorkbook(wb = wb, file = fileName, overwrite = TRUE)
@@ -568,6 +587,7 @@ log.package.version <- function()
       rx <- strsplit(x[Package == "SNPannotator",Imports],',\n')[[1]]
       for(r in rx)
       {
+        r=gsub(x= r, pattern = "^\\s*([a-zA-Z0-9\\.]+).*",replacement = '\\1')
         version <- x[Package == r, Version]
         print_and_log(sprintf("%s [%s]",r,version),display=FALSE)
       }

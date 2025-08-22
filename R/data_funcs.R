@@ -18,6 +18,26 @@ getGeneFile <- function(server)
     return(readRDS(gene.File))
 }
 
+getGeneFile_v2 <- function(build)
+{
+  g.File <- ''
+
+  if(build == 'grch37')
+    g.File <- system.file("extdata", "gene_names_grch37.rda", package = "SNPannotator")
+  else if(build == 'grch38')
+    g.File <- system.file("extdata", "gene_names_grch38.rda", package = "SNPannotator")
+
+  if (!file.exists(g.File))
+    print_and_log('Cytoband information file not found in the package!', level='fatal')
+  else
+    load(g.File)
+
+  if(build == 'grch37')
+    return(gene_names_grch37)
+  else if(build == 'grch38')
+    return(gene_names_grch38)
+}
+
 getGeneFile.external <- function(geneFilePath,build)
 {
 
@@ -90,4 +110,24 @@ getCytobandFile <- function(build)
     print_and_log('Cytoband information file not found in the package!', level='fatal')
   else
     return(readRDS(c.File))
+}
+
+getCytobandFile_v2 <- function(build)
+{
+  c.File <- ''
+
+  if(build == 'grch37')
+    c.File <- system.file("extdata", "cytoband_GRCh37.rda", package = "SNPannotator")
+  else if(build == 'grch38')
+    c.File <- system.file("extdata", "cytoband_GRCh38.rda", package = "SNPannotator")
+
+  if (!file.exists(c.File))
+    print_and_log('Cytoband information file not found in the package!', level='fatal')
+  else
+    load(c.File)
+
+  if(build == 'grch37')
+    return(cytoband_grch37)
+  else if(build == 'grch38')
+    return(cytoband_grch38)
 }

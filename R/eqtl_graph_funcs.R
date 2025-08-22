@@ -294,8 +294,8 @@ make.eQTL.graphs.ebi.for.alldataset.clumped <- function(data,output.index.table,
   tryCatch(
     {
 
-      #data <- data[,c('#gSNP','Gene')]
-      data <- data[pValue<5e-8,c('#gSNP','Gene')]
+      #data <- data[pvalue<5e-8,c('#gSNP','Gene')]
+      data <- data[,c('#gSNP','Gene')]
       data <- data[!is.na(Gene) & Gene !='',]
       data <- data[!duplicated(data)]
 

@@ -61,12 +61,12 @@ pingEnsembl <- function(server)
 #' in 1000 Genomes project database. This database will be used for returning variables in high LD
 #' with the target SNP.
 #'
-#' @param build Genome build. Either 37 or 38. default: 37
+#' @param build Genome build. Either 37 or 38. default: 38
 #' @return A data table is returned which includes the name, description and size of the available populations
 #' in 1000 Genomes project database.
 #' @export
 #'
-EnsemblDatabases <- function(build = 37)
+EnsemblDatabases <- function(build = 38)
 {
   server <- NULL
 
@@ -100,11 +100,11 @@ EnsemblDatabases <- function(build = 37)
 #' Shows the data releases available on this REST server.
 #' May return more than one release (infrequent non-standard Ensembl configuration).
 #'
-#' @param build Genome build. Either 37 or 38. default: 37
+#' @param build Genome build. Either 37 or 38. default: 38
 #' @return a message is displayed to the user
 #' @export
 #'
-EnsemblReleases <- function(build = 37)
+EnsemblReleases <- function(build = 38)
 {
 
   server <- NULL
@@ -154,7 +154,7 @@ fetch <- function(ext,server)
   while(counter < 6 && notFound)
   {
 
-    r <- GET(paste0(server, ext), content_type("application/json"))
+    r <- GET(trimws(paste0(server, ext)), content_type("application/json"))
 
     if(checkStatusCode(r))
       notFound <- FALSE
@@ -259,4 +259,116 @@ checkRemainingLimit <- function(response)
 {
   if(r$headers$`x-ratelimit-remaining` < 1)
     stop(sprintf('your requests are limited. Try again in %s seconds.'),r$headers$`x-ratelimit-reset`)
+}
+
+
+#' Query Ensembl for variant information based on genomic position
+#'
+#' This function retrieves variant information from Ensembl based on the specified genomic position.
+#' It takes the chromosome number, start position, and end position as input parameters and searches
+#' for variants within this window, using the specified genomic build.
+#' If only the start position is provided, the function automatically sets the end position equal
+#' to the start position. This is particularly relevant for SNP variants, where the start and
+#' end positions are the same. The function returns all variants found within the defined window.
+#'
+#' @param chromosome Numeric, specifying the chromosome number.
+#' @param start_position Numeric, specifying the starting base pair position.
+#' @param end_position Numeric, specifying the ending base pair position.
+#' @param build Numeric, specifying the genomic build, default value is 38.
+#' @param file_path character, path to a file for saving results as Excell spreadsheet.
+#'
+#' @return A `data.table` containing variant information including:
+#' - `id`: variant id in rsID format
+#' - `alleles`: variant alleles
+#' - `seq_region_name`: chromosome number
+#' - `start`: starting base pair
+#' - `end`: ending base pair
+#'
+#' @export
+findRSID <- function(chromosome, start_position,end_position=NULL, build = "38",file_path=NULL) {
+
+  if(is.null(chromosome) ||
+     is.null(start_position) ||
+     !is.numeric(chromosome) ||
+     !is.numeric(start_position))
+    stop("Chromosome, position not in correct format.")
+
+  if(build =='37')
+    server <- .SNPannotator$ENSEMBL_API_37
+  else if(build =='38')
+    server <- .SNPannotator$ENSEMBL_API_38
+  else
+    stop("Assmebly version is wrong (should be either 37 or 38).")
+
+  # use start position for end position of not specified OR if lower than start_position
+  if(is.null(end_position) || end_position < start_position)
+    end_position <- start_position
+
+
+  output.tbl <- NULL
+
+  region <- paste0(chromosome, ":", start_position, "-", end_position)
+  query <- paste0("/overlap/region/homo_sapiens/", region, "?feature=variation")
+
+  query <- paste0(server, query)
+
+  r <- tryCatch({
+    GET(query, content_type("application/json"))
+  }, error = function(cond) {
+    stop(paste('Error occured:',cond$message))
+    return(NULL)
+  }, warning = function(cond) {
+    message(paste('Warning occured:',cond$message))
+  })
+
+
+  if(!is.null(r) && r$status_code == 200)
+  {
+    results <- fromJSON(content(r, "text", encoding = "UTF-8"))
+
+    if (!is.null(results) &&
+        length(results) > 0 &&
+        "id" %in% names(results))
+    {
+      setDT(results)
+      output.tbl <- results[,list(id,alleles,seq_region_name, start,end)]
+    }
+    else
+    {
+      message("Variant not found.")
+      return(NULL)
+    }
+  }
+
+  # return if no file is defined
+  if(is.null(file_path))
+    return(output.tbl)
+
+
+  # save as excel
+  dir_path <- dirname(file_path)
+
+  # Check if directory exists; if not, create it
+  if (!dir.exists(dir_path)) {
+    message("Directory does not exist. File will not be saved.")
+    file_path <- NULL
+  }
+
+  # Try-catch block for exporting Excel file
+  if(!is.null(file_path))
+  {
+    tryCatch({
+      wb <- createWorkbook()
+      addWorksheet(wb, "Results")
+      writeData(wb, "Results", output.tbl)
+
+      saveWorkbook(wb, file_path, overwrite = TRUE)
+
+      message("File saved successfully: ", file_path)
+    }, error = function(e) {
+      message("Error saving file: ", e$message)
+    })
+  }
+
+  return(output.tbl)
 }

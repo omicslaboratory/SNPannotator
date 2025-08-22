@@ -4,10 +4,10 @@
 \alias{EnsemblDatabases}
 \title{List population from human database (1000 Genomes project)}
 \usage{
-EnsemblDatabases(build = 37)
+EnsemblDatabases(build = 38)
 }
 \arguments{
-\item{build}{Genome build. Either 37 or 38. default: 37}
+\item{build}{Genome build. Either 37 or 38. default: 38}
 }
 \value{
 A data table is returned which includes the name, description and size of the available populations

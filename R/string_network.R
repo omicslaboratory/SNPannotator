@@ -36,7 +36,7 @@ convert_numeric <- function(x)
 #' @return set of report files, including images, text and excel files containing functional enrichment analysis results.
 #' @export
 #'
-stringdb_annotation <- function(name, gene_list, required_score = 700, limit = 0, ...)
+run_stringdb_annotation <- function(name, gene_list, required_score = 700, limit = 0, ...)
 {
 
   ## check function parameters

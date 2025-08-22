@@ -4,11 +4,13 @@
 
 .SNPannotator$package.description <- 'Investigating the Functional Characteristics of Selected SNPs and Their Vicinity Genomic Region'
 
-.SNPannotator$script.version <- '1.3.11'
+.SNPannotator$script.version <- '1.3.22'
 
 .SNPannotator$help <- 'Check out our website for more help and support'
 
-.SNPannotator$EBI_eqtl_API <- 'https://www.ebi.ac.uk/eqtl/api'
+.SNPannotator$EBI_eqtl_API <- 'https://www.ebi.ac.uk/eqtl/api/v3'
+
+.SNPannotator$GTEx_eqtl_API <- 'https://gtexportal.org/api/v2'
 
 .SNPannotator$ENSEMBL_API_37 <- 'https://grch37.rest.ensembl.org'
 

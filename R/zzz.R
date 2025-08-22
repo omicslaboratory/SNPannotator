@@ -78,6 +78,6 @@ utils::globalVariables(c('r','variation2','variation3','syn_id','rs_id','checkSy
                          'dist2','i','population','feature_type',
                          'external_name','gene_id','id','d_prime',
                          'name','size','description','r2','Gene',
-                         'Pos','Cytoband','gSNP','Linked_SNP','number','Alleles','Deleteriousness'))
+                         'Pos','Cytoband','gSNP','Linked_SNP','number','Ref_Allele','Alt_Allele','Deleteriousness'))
 
 

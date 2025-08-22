@@ -26,11 +26,9 @@ annotate_shiny <- function(config.list) {
   #setupLogOptions('snpannotator.log')
 
   #===========================================================
-  g.set <- loadGeneNameData(build)
+  g.set <- getGeneFile_v2(build)
 
-  c.set <- loadCytobandData(build)
-
-  traits.graph=loadGWAScatGraph()
+  c.set <- getCytobandFile_v2(build)
 
   #===========================================================
 
@@ -78,7 +76,9 @@ annotate_shiny <- function(config.list) {
     checkifOutputIncludesRS(rs,output)
 
     # the variants is found
-    tab <-  returnVariantDatatable(i, varInfo,db)
+    variant_data_list <-  returnVariantDatatable(i, varInfo,db)
+
+    tab <- variant_data_list['variant_table'][[1]]
 
     # bypass this variant if errors occured during parsing
     if(is.null(tab))
@@ -105,41 +105,6 @@ annotate_shiny <- function(config.list) {
 
       }
 
-    #===========================================================
-
-    ##################################
-    ### GWAS catalog associations  ###
-    ##################################
-    if(!is.null(traits.graph))
-    {
-
-      gwascatalog.tab <- find.associations.offline(traits.graph,tab)
-
-
-      if(!is.null(gwascatalog.tab) && nrow(gwascatalog.tab) > 0 )
-      {
-        gwascatalog.tab[,Phenotype:=paste(Phenotype,collapse = ';'),by=SNP]
-        gwascatalog.tab = gwascatalog.tab[!duplicated(SNP),]
-
-        old.name.order <- names(tab)
-        tab <- merge(x=tab,
-                     y=gwascatalog.tab,
-                     by.x = 'Linked_SNP',
-                     by.y = 'SNP',
-                     all.x = TRUE,
-                     sort = FALSE)
-
-        setcolorder(tab,old.name.order)
-
-      } else {
-        # add an empty column for consistency
-        tab[, Phenotype := ""]
-
-      }
-    }else
-    {
-      tab[, Phenotype := ""]
-    }
 
     #===========================================================
 

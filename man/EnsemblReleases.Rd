@@ -4,10 +4,10 @@
 \alias{EnsemblReleases}
 \title{data release available on this REST server.}
 \usage{
-EnsemblReleases(build = 37)
+EnsemblReleases(build = 38)
 }
 \arguments{
-\item{build}{Genome build. Either 37 or 38. default: 37}
+\item{build}{Genome build. Either 37 or 38. default: 38}
 }
 \value{
 a message is displayed to the user

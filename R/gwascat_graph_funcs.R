@@ -170,13 +170,13 @@ make.graph.for.alldataset <- function(graph,outputFolder,projectName, data, grap
     })
 }
 
-make.graph.for.alldataset.clumped <- function(graph, data, graph.layout,level,fileName)
+make.graph.for.alldataset.clumped <- function(data, graph.layout,fileName)
 {
   tryCatch(
     {
       data <- data[,c('gSNP','Phenotype')]
       data <- data[!is.na(Phenotype) & Phenotype !='',]
-      data <- data[, .(Phenotype = unlist(tstrsplit(Phenotype, ";", type.convert = TRUE))), by = "gSNP"]
+      data <- data[, .(Phenotype = unlist(tstrsplit(Phenotype, "; ", type.convert = TRUE))), by = "gSNP"]
       data <- data[!is.na(Phenotype),]
       data <- data[!duplicated(data),]
 

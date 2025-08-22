@@ -4,7 +4,7 @@
 #'
 #' @param rslist A vector of rs numbers.
 #' @param file Path to the Excel file for saving search results.
-#' @param build Genome build. Either 37 or 38. default: 37
+#' @param build Genome build. Either 37 or 38. default: 38
 #' @param db The population database for calculating LD scores.
 #' This can be found using `Ensembl.Databases()` function. default: 1000GENOMES:phase_3:EUR
 #' @param window_size Number of base pairs around the variant for checking LD scores (max = 500kb). default: 500
@@ -12,7 +12,7 @@
 #' @return A data table with variant information.
 #' @export
 #'
-findProxy <- function(rslist,file=NULL,build='37',db="1000GENOMES:phase_3:EUR", window_size=500, r2=0.8)
+findProxy <- function(rslist,file=NULL,build='38',db="1000GENOMES:phase_3:EUR", window_size=500, r2=0.8)
 {
   start.time <-  proc.time()
 
@@ -54,6 +54,7 @@ findProxy <- function(rslist,file=NULL,build='37',db="1000GENOMES:phase_3:EUR", 
 
   output <- data.frame()
   message("Searching for proxy variants ...",appendLF = TRUE)
+  message(sprintf("Build: %s, min-r2: %s, window-size: %s, db: %s",build,r2,window_size,db),appendLF = TRUE)
 
   for(i in 1:rsCount)
   {
@@ -97,6 +98,20 @@ findProxy <- function(rslist,file=NULL,build='37',db="1000GENOMES:phase_3:EUR", 
     message(sprintf("Found %s proxies for %s variants.",nrow(output), rsCount),appendLF = TRUE)
 
     # save to excel
+    if(!is.null(file))
+    {
+      tryCatch({
+        dir_path <- dirname(file)
+        if (!dir.exists(dir_path)) {
+          message("Directory does not exist. File will not be saved.")
+          file <- NULL
+        }
+      }, error = function(e) {
+        message("Error in file path: ", e$message)
+        file <- NULL
+      })
+    }
+
     if(!is.null(file))
       save_xlsx_report(file, rslist,build,db,r2,window_size,output)
 
@@ -209,14 +224,14 @@ getVariantLDs <- function(rsID,server,db, window_size, r2, file.log=TRUE)
 #' @param file Path to the Excel file for saving search results.
 #' @param pairwise If TRUE, compute pairwise LD between all elements of a list.
 #' If FALSE, computes the LD between first and other elements of the list. default: FALSE
-#' @param build Genome build. Either 37 or 38. default: 37
+#' @param build Genome build. Either 37 or 38. default: 38
 #' @param db The population database for calculating LD scores.
 #' This can be found using `Ensembl.Databases()` function. default: "1000GENOMES:phase_3:EUR"
 #' @param r2 Only return pairs of variants whose r-squared value is equal to or greater than the value provided. default: 0.1.
 #' @return A data table with variant information.
 #' @export
 #'
-pairwiseLD <- function(rsList,file=NULL, pairwise = FALSE,build=37,db="1000GENOMES:phase_3:EUR", r2=0.1)
+findPairwiseLD <- function(rsList,file=NULL, pairwise = FALSE,build=38,db="1000GENOMES:phase_3:EUR", r2=0.1)
 {
 
   start.time <-  proc.time()
@@ -253,7 +268,7 @@ pairwiseLD <- function(rsList,file=NULL, pairwise = FALSE,build=37,db="1000GENOM
   output_ld_tbl <- data.table()
 
   message("Searching for LD data ...",appendLF = TRUE)
-
+  message(sprintf("Build: %s, db: %s",build,db),appendLF = TRUE)
 
   if(pairwise == TRUE)
   {
@@ -276,11 +291,28 @@ pairwiseLD <- function(rsList,file=NULL, pairwise = FALSE,build=37,db="1000GENOM
   }
 
   #=====================================================
-  if(nrow(output_ld_tbl)> 0)
+  if(nrow(output_ld_tbl) > 0)
   {
+
+    # save to excel
+    if(!is.null(file))
+    {
+      tryCatch({
+        dir_path <- dirname(file)
+        if (!dir.exists(dir_path)) {
+          message("Directory does not exist. File will not be saved.")
+          file <- NULL
+        }
+      }, error = function(e) {
+        message("Error in file path: ", e$message)
+        file <- NULL
+      })
+    }
+
     # save to excel
     if(!is.null(file))
       save_xlsx_report(file, rsList,build,db,r2,'NA',output_ld_tbl)
+
 
     return(output_ld_tbl)
   }

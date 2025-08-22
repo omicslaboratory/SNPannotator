@@ -147,16 +147,19 @@ do.string.analysis <- function(geneList,
   #===========
   print_and_log("Checking STRING interaction partners ...", LF = FALSE)
 
+  string.gene.partner.list <- NULL
+
   if(standalone == TRUE)
   {
     string.gene.partner.list <- find.gene.partners.standalone(geneList, server,STRING_config_list)
-    print_and_log("Checking STRING interaction partners ...done")
   }
   else
   {
     string.gene.partner.list <- find.gene.partners(geneList, server,STRING_config_list)
-    print_and_log("Checking STRING interaction partners ...done")
   }
+
+  if(!is.null(string.gene.partner.list))
+    print_and_log("Checking STRING interaction partners ...done")
 
 
 
@@ -754,6 +757,7 @@ filter.variants.for.STRING <- function(data)
 
   #geneList <- geneList[, processed_geneId_col := mapply(keep_nearest_gene_in_row,Gene,GeneId)]
   #geneList <-  unique(gsub(trimws(unlist(sapply(unlist(geneList$GeneId), function(x) strsplit(x,',|/')))), pattern= '(.+)\\(.+)',replacement = '\\1'))
+
   geneList <- unique(unlist(strsplit(geneList$GeneId,split = ',')))
 
   if(length(geneList) == 0)
