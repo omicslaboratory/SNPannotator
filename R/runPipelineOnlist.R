@@ -62,6 +62,24 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
   LDlist = config.list$general$LDlist
   start_index = config.list$general$start_index
 
+
+  # make a table for output excel file (1st sheet)
+  project_info_tbl <- NULL
+  if(LDlist == TRUE)
+    project_info_tbl <- data.table("Project name" = projectName,
+                                   "Output folder" = outputFolder,
+                                   "Genomic build" = build,
+                                   "DB" = db,
+                                   "Window Size" = window_size,
+                                   "r2" = r2,
+                                   "RS list" = paste(rslist,collapse = ';'))
+  else
+    project_info_tbl <- data.table("Project name" = projectName,
+                                   "Output folder" = outputFolder,
+                                   "Genomic build" = build,
+                                   "RS list" = paste(rslist,collapse = ';'))
+
+
   #DEPRECATED
   #geneNames.file = config.list$general$geneNames_File
   #cores = config.list$general$cores
@@ -97,6 +115,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
   qtl.p.value.threshold = config.list$QTL$pvalue_threshold
   eqtl.run <- config.list$QTL$eQTL
   sqtl.run <- config.list$QTL$sQTL
+  gtex.datasetId <- config.list$QTL$dataset
   # qtl.eQTL_group = config.list$QTL$eQTL_group
 
   # DEPRECATE - GWAS catalogue
@@ -168,6 +187,8 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
     # if(!is.null(qtl.eQTL_group))
     #   print_and_log(sprintf("eQTL group = %s",qtl.eQTL_group),display=FALSE)
     print_and_log(sprintf("QTL p_value threshold = %s",qtl.p.value.threshold),display=FALSE)
+    if(build == 'grch38')
+      print_and_log(sprintf("QTL datasetId = %s",gtex.datasetId),display=FALSE)
   }
 
 
@@ -227,17 +248,33 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
   ##### ping APIs ######
   ######################
   .SNPannotator$pingEnsembl <- NULL
+  .SNPannotator$EnsemblRelease <- NULL
   .SNPannotator$PingSTRING <- NULL
   .SNPannotator$PingQTL <- NULL
 
   if(!is.null(ensembl.server))
+  {
     .SNPannotator$pingEnsembl <- pingEnsembl(ensembl.server)
 
+
+    .SNPannotator$EnsemblRelease <- SNPannotator::EnsemblReleases(build = sub("^[^0-9]*([0-9]+).*", "\\1", build))
+    .SNPannotator$EnsemblRelease <- .SNPannotator$EnsemblRelease$releases[1]
+    print_and_log(paste("Ensembl release:", .SNPannotator$EnsemblRelease))
+
+    project_info_tbl = cbind(project_info_tbl , data.table("Ensembl version" = .SNPannotator$EnsemblRelease))
+  }
+
   if(!is.null(qtl.server))
+  {
     .SNPannotator$PingQTL <- PingQTL(qtl.server,build)
+
+    if(build == 'grch38')
+      project_info_tbl = cbind(project_info_tbl , data.table("GTEx version" = gtex.datasetId))
+  }
 
   if(!is.null(string.server))
     .SNPannotator$PingSTRING <- PingSTRING(string.server)
+
 
 
   ######################
@@ -488,6 +525,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
           ## eqtl from GTEx
           print_and_log('Checking eQTL data ...',LF=FALSE)
           eqtl.tab <- find.qtl.GTEx(server = qtl.server,
+                                    datasetId = gtex.datasetId,
                                     qtl='eQTL',
                                     variant_IDs = b38_ids,
                                     pvalue_threshold = qtl.p.value.threshold)
@@ -522,6 +560,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
           ## sqtl from GTEx
           print_and_log('Checking sQTL data ...',LF=FALSE)
           sqtl.tab <- find.qtl.GTEx(server = qtl.server,
+                                    datasetId = gtex.datasetId,
                                     qtl='sQTL',
                                     variant_IDs = b38_ids,
                                     pvalue_threshold = qtl.p.value.threshold)
@@ -760,7 +799,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
     output_list <- c(output_list,list('mainData' = output))
 
     # save excel file - main
-    appendXLSXfile(output,thisSheetName = 'All Variants',fileName = output.xlsx.file, addFirst = FALSE)
+    writeXLSXfile(output,project_info_tbl,fileName = output.xlsx.file)
   }
 
 

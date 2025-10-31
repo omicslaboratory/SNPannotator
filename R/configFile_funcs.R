@@ -254,6 +254,19 @@ loadConfigurationFile = function(path, demo = FALSE)
       return(NULL)
     }
 
+    # gtex dataset id , gtex_v8 or gtex_v10
+
+    if(is.null(configs$QTL$dataset))
+      configs$QTL$dataset <- 'gtex_v10'
+    else
+      configs$QTL$dataset = tolower(trimws(configs$QTL$dataset))
+
+    configs$QTL$dataset <- is_character_or_default(parameter = configs$QTL$dataset,
+                                                   parameter_name = 'GTEx portal dataset',
+                                                   req_list = c('gtex_v8','gtex_v10'),
+                                                   default_value = 'gtex_v10',
+                                                   ignore_error = TRUE)
+    ##
     configs$QTL$server = NULL
 
     if(configs$QTL$eQTL || configs$QTL$sQTL)
