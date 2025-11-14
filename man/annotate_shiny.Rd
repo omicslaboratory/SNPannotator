@@ -7,7 +7,7 @@
 annotate_shiny(config.list)
 }
 \arguments{
-\item{configurationList}{List. A list of variants andconfiguration parameters.}
+\item{config.list}{List. A list of variants andconfiguration parameters.}
 }
 \value{
 a data table with all variant information is returned.

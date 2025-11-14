@@ -147,7 +147,7 @@ make.graph.for.alldataset <- function(graph,outputFolder,projectName, data, grap
         theme_void()+
         theme(legend.position = "none")
 
-      ggsave(trait_assoc_plot,file=fileName,
+      ggsave(trait_assoc_plot,filename=fileName,
              width = 20,height = 15,units = 'in',limitsize = FALSE)
 
 
@@ -211,7 +211,7 @@ make.graph.for.alldataset.clumped <- function(data, graph.layout,fileName)
         theme_void()+
         theme(legend.position = "none")
 
-      ggsave(trait_assoc_plot,file=fileName,
+      ggsave(trait_assoc_plot,filename=fileName,
              width = 20,height = 15,units = 'in',limitsize = FALSE)
 
 

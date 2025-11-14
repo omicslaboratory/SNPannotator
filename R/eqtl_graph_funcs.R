@@ -206,7 +206,7 @@ make.eQTL.graphs.ebi.for.alldataset <- function(data,outputFolder,projectName,gr
         theme_void()+
         theme(legend.position = "none")
 
-      ggsave(eqtl_plot,file=fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
+      ggsave(eqtl_plot,filename =fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
 
 
       print_and_log(sprintf('Plot saved: %s',fileName),display=FALSE)
@@ -272,7 +272,7 @@ make.eQTL.graphs.ebi.for.alldataset.clumped.with.categories <- function(data,out
         theme_void()+
         theme(legend.position = "none")
 
-      ggsave(eqtl_plot,file=fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
+      ggsave(eqtl_plot,filename =fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
 
 
       print_and_log(sprintf('Plot saved: %s',fileName),display=FALSE)
@@ -332,7 +332,7 @@ make.eQTL.graphs.ebi.for.alldataset.clumped <- function(data,output.index.table,
         theme_void()+
         theme(legend.position = "none")
 
-      ggsave(eqtl_plot,file=fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
+      ggsave(eqtl_plot,filename =fileName,width = 20,height = 15,units = 'in',limitsize = FALSE)
 
 
       print_and_log(sprintf('Plot saved: %s',fileName),display=FALSE)

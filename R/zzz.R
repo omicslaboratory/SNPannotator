@@ -72,12 +72,21 @@ NULL
 }
 
 
-utils::globalVariables(c('r','variation2','variation3','syn_id','rs_id','checkSynonyms','seq_region_name',
+utils::globalVariables(c('r','variation2','variation3','syn_id','rs_id','checkSynonyms',
+                         'seq_region_name', '.',
                          'variation1','chr','start','Chr',
                          'end','on.gene','type','dist1',
                          'dist2','i','population','feature_type',
                          'external_name','gene_id','id','d_prime',
                          'name','size','description','r2','Gene',
-                         'Pos','Cytoband','gSNP','Linked_SNP','number','Ref_Allele','Alt_Allele','Deleteriousness'))
+                         'Pos','Cytoband','gSNP','Linked_SNP','number','Ref_Allele',
+                         'Alt_Allele','Deleteriousness','#gSNP', '..desired_cols', '..existing_cols_clinvar',
+                         '..existing_cols_gwascat', 'Associations', 'GeneId', 'Imports', 'LD',
+                         'Most_severe_consequence', 'Package', 'Phenotype', 'Tissue', 'V1', 'Version',
+                         'alleles', 'alt', 'annotation', 'b37VariantId', 'b38_id', 'cluster',
+                         'consequence_terms', 'cytoband_grch37', 'cytoband_grch38', 'distance',
+                         'eQTL_group', 'from', 'geneSymbol', 'gene_names_grch37', 'gene_names_grch38',
+                         'gene_symbol', 'item', 'pValue', 'phenotype', 'position_b37', 'preferredName',
+                         'pvalue', 'rsId', 'rsid', 'se', 'server', 'snpID', 'stringId', 'variant_allele'))
 
 

@@ -645,6 +645,7 @@ log.package.version <- function()
 #'
 #' This function merges multiple result files into one.
 #'
+#' @param ... list of input files to be merged.
 #' @param fileName name of the output file.
 #' @return A data table is returned.
 #' @export

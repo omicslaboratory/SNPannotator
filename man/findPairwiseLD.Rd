@@ -14,6 +14,8 @@ findPairwiseLD(
 )
 }
 \arguments{
+\item{rsList}{A vector of rs numbers.}
+
 \item{file}{Path to the Excel file for saving search results.}
 
 \item{pairwise}{If TRUE, compute pairwise LD between all elements of a list.
@@ -25,8 +27,6 @@ If FALSE, computes the LD between first and other elements of the list. default:
 This can be found using \code{Ensembl.Databases()} function. default: "1000GENOMES:phase_3:EUR"}
 
 \item{r2}{Only return pairs of variants whose r-squared value is equal to or greater than the value provided. default: 0.1.}
-
-\item{rslist}{A vector of rs numbers.}
 }
 \value{
 A data table with variant information.

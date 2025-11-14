@@ -220,7 +220,7 @@ getVariantLDs <- function(rsID,server,db, window_size, r2, file.log=TRUE)
 #'
 #' This function returns a data frame of LD values between the given variants in a selected population.
 #'
-#' @param rslist A vector of rs numbers.
+#' @param rsList A vector of rs numbers.
 #' @param file Path to the Excel file for saving search results.
 #' @param pairwise If TRUE, compute pairwise LD between all elements of a list.
 #' If FALSE, computes the LD between first and other elements of the list. default: FALSE

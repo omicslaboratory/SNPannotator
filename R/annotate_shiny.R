@@ -3,7 +3,7 @@
 #' This function should not be used outside shiny app
 #' A list of variants and parameters are received and their information is checked on various API servers.
 #'
-#' @param configurationList List. A list of variants andconfiguration parameters.
+#' @param config.list List. A list of variants andconfiguration parameters.
 #' @return a data table with all variant information is returned.
 #' @export
 #'

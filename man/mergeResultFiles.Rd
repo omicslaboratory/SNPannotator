@@ -7,6 +7,8 @@
 mergeResultFiles(..., fileName)
 }
 \arguments{
+\item{...}{list of input files to be merged.}
+
 \item{fileName}{name of the output file.}
 }
 \value{

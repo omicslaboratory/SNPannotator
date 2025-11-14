@@ -1,6 +1,6 @@
 Package: SNPannotator
 Type: Package
-Title: Investigating the Functional Characteristics of Selected variants and Their Vicinity Genomic Region 
+Title: Investigating the Functional Characteristics of Selected Variants and Their Vicinity Genomic Region 
 Version: 1.3.25
 Date: 2025-11-14
 Authors@R: c(
