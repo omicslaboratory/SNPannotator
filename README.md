@@ -1,0 +1,240 @@
+SNPannotator is a bioinformatics tool designed to annotate selected genetic variants, such as top hits from genome-wide association studies (GWAS). While GWAS identifies statistical associations between variants and phenotypes, it does not reveal the biological mechanisms involved. This software facilitates post-GWAS and general variant annotation by assessing the functional impact of variants on human biology.
+
+This file provides a brief introduction to the package functions and instructions on how to run them. A detailed manual is also available for a step-by-step guide to using the package.
+
+---
+
+
+## Installation
+
+The easiest way to install the SNPannotator package is to get it from the Comprehensive R Archive Network (CRAN). Required dependencies will be downloaded automatically:
+
+```{r}
+    # this will automatically download and install the dependencies.
+    install.packages("SNPannotator")
+```
+
+You can also install the latest version from GitHub.
+
+ ```{r}
+# Install devtools if not already installed
+install.packages("devtools")
+# Load devtools package
+library(devtools)
+# Install the package from GitHub
+install_github("omicslaboratory/SNPannotator")
+```
+
+---
+
+## Input Preparation
+
+SNPannotator requires two input files:
+
+1. GWAS top hit variants: 
+
+A text file containing a list of the top independent GWAS variants. Each line of this file corresponds to a single variant rsID, which represents a genetic locus associated with the studied trait.
+
+2. Configuration File: 
+
+A text-based configuration file that users must edit before running the analysis. A sample configuration file is embedded and can be obtained from the package.
+
+
+---
+
+## Step by step guide to running the package
+
+1- Create an empty folder to save the output result files. Ensure that current user and R environment has the necessary read/write permissions for this folder.
+
+2- Prepare the variants input file. Each line of the file should correspond to a single variant rsID. It is recommended to place this file in the newly created folder for easy access.
+
+3- Obtain the configuration file from the package using the command `getConfigFile('/path/to/folder')`. This saves `inSilicoSeqConfig.ini` in the defined folder. Edit the parameters of this file as needed.
+
+4- Run the annotation pipeline by running `run_annotation('/path/to/inSilicoSeqConfig.ini')`.
+
+
+---
+
+## Package functions:
+
+**Please refer to the package manual for detailed information and examples.**
+
+
+### demo_annotation()
+
+This function provides a quick way to test the package by generating a sample output for one variant. Report files are saved in the current working directory.
+
+Example:
+
+```{r}
+demo_annotation()
+```
+
+---
+
+### getConfigFile() 
+
+Copy a sample configuration file to specified folder.
+
+Function parameters:
+
+-	dir.path, The existing folder for copying the file.
+
+Example:
+
+```{r}
+getConfigFile() # saves to current active directory
+```
+
+---
+
+### run_annotation() 
+
+This is the main package function, which receives the path to a configuration file (.ini) for running the parameter.
+
+Function parameters:
+
+-	configurationFilePath, The path to the configuration file.
+
+-	verbose, Whether to display messages in the console, default=TRUE.
+
+
+Example:
+
+```{r}
+run_annotation('/home/user/analysis/inSilicoSeqConfig.ini')
+```
+
+---
+
+### findProxy() 
+
+this function can be used to find variants that are in high LD with a list of selected variants. 
+
+
+Function parameters:
+
+- rslist, A vector of rs numbers.
+
+- file, Path to the Excel file for saving search results. This is optional, the result will be just available in R environment if file path is not provided.
+
+- build, Genome build. Either 37 or 38. default: 37
+
+- db, The population database for calculating LD scores.
+
+- window_size, Number of base pairs around the variant for checking LD scores (max = 500kb).
+
+- r2, The minimum LD threshold for selecting variants around the target SNP. default: 0.8. 
+
+Example:
+
+```{r}
+findProxy("rs234")
+
+findProxy(c("rs234","rs678"))
+```
+
+---
+
+### findPairwiseLD() 
+
+This function computes the linkage disequilibrium (LD) between the selected variants using data from the Ensembl website.
+
+Function parameters
+
+-	rslist, A vector of rs numbers.
+
+-	file, Path to the Excel file for saving search results. This is optional, the result will be just available in R environment if file path is not provided.
+
+-	pairwise, If TRUE, compute pairwise LD between all elements of a list. If FALSE, computes the LD between first and other elements of the list. default: FALSE
+
+-	build, Genome build. Either 37 or 38. default: 37
+
+-	db, The population database for calculating LD scores.
+
+-	window_size, Number of base pairs around the variant for checking LD scores (max = 500kb).
+
+-	r2, The minimum LD threshold for selecting variants around the target SNP. default: 0.8. 
+
+Example:
+
+```{r}
+output = findPairwiseLD(c('rs234','rs10244533'))
+```
+
+---
+
+### findGenomicPos() 
+
+This function retrieves variant information from the GTEx portal using either an rsID or a variant ID formatted as CHR_POS_REF_ALT. If an rsID is provided, the function returns the corresponding genomic positions in both GRCh37 and GRCh38 builds. When searching for an rsID based on genomic position, the position parameter should be specified according to the GRCh38 reference genome.
+
+Function parameters
+
+-	id, Character string representing the rsID (e.g., "rs12345") or the variant ID
+
+-	type, Character string specifying the type of query. Must be either "rsid" or "varid".
+
+-	file_path, path to a file for saving results as Excell spreadsheet.
+
+
+Example:
+
+```{r}
+findGenomicPos('rs121')
+
+findGenomicPos('7_24898067_A_G', type = "varid", file_path  = "output.xlsx")
+```
+
+---
+
+### findRSID() 
+
+This function retrieves variant information from Ensembl based on the specified genomic position. It takes the chromosome number, start position, and end position as input parameters and searches for variants within this window, using the specified genomic build. If only the start position is provided, the function automatically sets the end position equal to the start position. This is particularly relevant for SNP variants, where the start and end positions are the same. The function returns all variants found within the defined window.
+
+Function parameters
+
+-	chromosome, Numeric, specifying the chromosome number.
+
+-	start_position, Numeric, specifying the starting base pair position.
+
+-	end_position, Numeric, specifying the ending base pair position.
+
+-	build, Numeric, specifying the genomic build, default value is 38.
+
+-	file_path, Character, path to a file for saving results as Excell spreadsheet.
+
+
+
+Example:
+
+```{r}
+findRSID(15, 79845218)
+
+findRSID(15, 79845218 , 79845238, file_path = "output.xlsx")
+
+findRSID(15, 80137560 ,build= "37")
+```
+
+---
+
+### stringdb_annotation()
+
+This function takes a vector of gene symbols, retrieves their interaction partners from STRING DB, and performs functional enrichment analysis.
+
+Function parameters
+
+- name A character string specifying a unique identifier for this analysis run.
+
+- gene_list A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).
+
+- required_score Threshold of significance to include an interaction, a number between 0 and 1000.
+
+- limit Limits the number of interaction partners retrieved per protein, a number between 0 and 100.
+
+- ... Additional arguments passed to downstream functions for extended customization.
+
+Example:
+
+```{r}
+stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
+```
