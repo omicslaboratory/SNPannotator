@@ -2,6 +2,8 @@ SNPannotator is a bioinformatics tool designed to annotate selected genetic vari
 
 This file provides a brief introduction to the package functions and instructions on how to run them. A detailed manual is also available for a step-by-step guide to using the package.
 
+Please refer to [our website](https://omicslab.org/snpannotator) for more information and a detailed manual.
+
 ---
 
 
