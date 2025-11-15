@@ -16,10 +16,33 @@ The easiest way to install the SNPannotator package is to get it from the Compre
     install.packages("SNPannotator")
 ```
 
-You can also install the latest version from GitHub.
+You can also install the latest version from GitHub. In that case, ensure that all dependencies are installed. Use the function below to check for and install any missing dependencies.
 
  ```{r}
-# Install devtools if not already installed
+# Verify that all required package dependencies are installed.
+# Any packages not found are automatically installed from CRAN.
+install_missing_packages <- function() {
+  pkgs <- c("data.table","httr","jsonlite","xml2","openxlsx","progress",
+            "ggplot2","kableExtra","methods","rmarkdown","ini","igraph",
+            "ggraph","futile.logger","png","readr")
+  
+  # Identify missing packages
+  missing <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
+  
+  if (length(missing) > 0) {
+    message("Installing missing packages: ", paste(missing, collapse = ", "))
+    install.packages(missing)
+  } else {
+    message("All required packages are already installed.")
+  }
+}
+
+# run the function
+install_missing_packages()
+
+
+# Install devtools if not already installed.
+# This is required for installing from GitHub.
 install.packages("devtools")
 # Load devtools package
 library(devtools)

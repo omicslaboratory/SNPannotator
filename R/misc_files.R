@@ -109,7 +109,8 @@ writeXLSXfile <- function(output,project_info_tbl,fileName)
     addStyle(wb, sheet = thisSheetName, style = centerAlign, cols = c(1:10,17),rows = 1:rowCount,gridExpand = TRUE)
     setColWidths(wb, sheet = thisSheetName, cols = 1:colCount, widths = "auto")
 
-    setColWidths(wb, sheet = thisSheetName, cols = c(1), widths = 7)
+    setColWidths(wb, sheet = thisSheetName, cols = c(1,10), widths = 7)
+    setColWidths(wb, sheet = thisSheetName, cols = c(7,8), widths = 10)
     # setColWidths(wb, sheet = thisSheetName, cols = c(11:16.18,19), widths = 20)
     # setColWidths(wb, sheet = thisSheetName, cols = c(20), widths = 50)
 

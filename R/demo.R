@@ -65,6 +65,22 @@ demo_annotation <- function() {
   LDlist = config.list$general$LDlist
   start_index = config.list$general$start_index
 
+  # make a table for output excel file (1st sheet)
+  project_info_tbl <- NULL
+  if(LDlist == TRUE)
+    project_info_tbl <- data.table("Project name" = projectName,
+                                   "Output folder" = outputFolder,
+                                   "Genomic build" = build,
+                                   "DB" = db,
+                                   "Window Size" = window_size,
+                                   "r2" = r2,
+                                   "RS list" = paste(rslist,collapse = ';'))
+  else
+    project_info_tbl <- data.table("Project name" = projectName,
+                                   "Output folder" = outputFolder,
+                                   "Genomic build" = build,
+                                   "RS list" = paste(rslist,collapse = ';'))
+
   #DEPRECATED
   #geneNames.file = config.list$general$geneNames_File
   #cores = config.list$general$cores
@@ -654,7 +670,8 @@ demo_annotation <- function() {
     output_list <- c(output_list,list('mainData' = output))
 
     # save excel file - main
-    appendXLSXfile(output,thisSheetName = 'All Variants',fileName = output.xlsx.file, addFirst = FALSE)
+    writeXLSXfile(output,project_info_tbl,fileName = output.xlsx.file)
+    # appendXLSXfile(output,thisSheetName = 'All Variants',fileName = output.xlsx.file, addFirst = FALSE)
   }
 
 
@@ -774,16 +791,11 @@ demo_annotation <- function() {
 
   if(!is.null(trait.cluster.report) )
   {
-    # write.table(trait.cluster.report,
-    #             file= trait.cluster.file,
-    #             col.names = FALSE,
-    #             row.names = FALSE,
-    #             quote=FALSE)
 
-    appendXLSXfile(trait.cluster.report,
-                   thisSheetName = 'Associated trait clusters',
-                   fileName = output.xlsx.file,
-                   addFirst = FALSE)
+    # appendXLSXfile(trait.cluster.report,
+    #                thisSheetName = 'Associated trait clusters',
+    #                fileName = output.xlsx.file,
+    #                addFirst = FALSE)
 
     output_list <- c(output_list,list('traitClusters' = trait.cluster.report))
 
