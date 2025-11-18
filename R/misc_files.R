@@ -400,7 +400,10 @@ find.nearest.gene <- function(ch, pos, gene.set,nearestGene_type)
 
   found <- data[on.gene == 1 ,]
   if(nrow(found)>0)
-    return(list(paste(found$id,collapse=','),paste(found$name,collapse=',')))
+  {
+    found[name=="",name := id]
+    return(list(paste(found$id,collapse=','),paste(found$name,collapse=','),paste(found$type,collapse=',')))
+  }
 
   # 2- intergenic variable
   outList <- tryCatch({
@@ -421,11 +424,13 @@ find.nearest.gene <- function(ch, pos, gene.set,nearestGene_type)
     v1=data1[order(-dist1)][1,]
     v2=data2[order(dist2)][1,]
 
+    v1[name=="",name := id]
+    v2[name=="",name := id]
 
     if(abs(v1$dist1) < abs(v2$dist2))
-      return(list(v1$id,v1$name))
+      return(list(v1$id,v1$name,v1$type))
     else
-      return(list(v2$id,v2$name))
+      return(list(v2$id,v2$name,v2$type))
   },warning=function(x){
     print_and_log(sprintf('Error in gene mapping: %s', x$message),
                   level='warning',

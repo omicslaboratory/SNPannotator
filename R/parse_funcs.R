@@ -442,30 +442,33 @@ getVariantData <- function(varNum, gVarId, varInfoList, database , LD)
         if('distance' %in% names(trans_consq_tbl))
         {
           trans_consq_tbl <- trans_consq_tbl[, distance := sapply(distance, function(x) {
-            if (length(x) == 0) "" else as.character(x)
+            if (length(x) == 0 || x=='NULL') "" else as.character(x)
           })]
           unwanted_genes <- unlist(unique(trans_consq_tbl[distance != "",]$gene_id ))
         }
 
         if('gene_symbol' %in% names(trans_consq_tbl))
           trans_consq_tbl <- trans_consq_tbl[, gene_symbol := sapply(gene_symbol, function(x) {
-            if (length(x) == 0) "" else as.character(x)
+            if (length(x) == 0 || x=='NULL') "" else as.character(x)
           })]
 
         if('gene_id' %in% names(trans_consq_tbl))
           trans_consq_tbl <- trans_consq_tbl[, gene_id := sapply(gene_id, function(x) {
-            if (length(x) == 0) "" else as.character(x)
+            if (length(x) == 0 || x=='NULL') "" else as.character(x)
           })]
 
 
         # remove genes with distance !="" that are duplicates
-        if(!is.null(unwanted_genes))
-          trans_consq_tbl <- trans_consq_tbl[!is.element(gene_id,unwanted_genes), ]
+        # if(!is.null(unwanted_genes))
+        #   trans_consq_tbl <- trans_consq_tbl[!is.element(gene_id,unwanted_genes), ]
 
         # put gene_id in place of gene_symbol if missing
         if(all(is.element(c('gene_symbol','gene_id') , names(trans_consq_tbl))))
           trans_consq_tbl[gene_symbol=="", gene_symbol := gene_id]
 
+        # add gene symbol column if not existing
+        if(!is.element('gene_symbol',names(trans_consq_tbl)))
+          trans_consq_tbl$gene_symbol <- trans_consq_tbl$gene_id
 
 
         if('distance' %in% names(trans_consq_tbl) &&
@@ -478,6 +481,8 @@ getVariantData <- function(varNum, gVarId, varInfoList, database , LD)
 
         if(!is.null(trans_consq_tbl) && is.element('variant_allele',names(trans_consq_tbl)))
         {
+
+
           geneNames <- paste(unique(trans_consq_tbl[variant_allele == minor_all,]$gene_symbol), collapse = ",")
 
           geneIDs <- paste(unique(trans_consq_tbl[variant_allele == minor_all,]$gene_id), collapse = ",")

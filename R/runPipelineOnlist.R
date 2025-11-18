@@ -388,7 +388,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
       print_and_log("Checking gene information ...", LF = FALSE)
 
       tab[Gene=='' & GeneId=='',
-          c('GeneId','Gene') := find.nearest.gene(Chr,Pos,g.set,nearestGene_type),
+          c('GeneId','Gene','geneBiotype') := find.nearest.gene(Chr,Pos,g.set,nearestGene_type),
           by=list(Chr,Pos)]
 
 
