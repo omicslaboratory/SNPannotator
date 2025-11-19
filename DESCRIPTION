@@ -1,6 +1,6 @@
 Package: SNPannotator
 Type: Package
-Title: Investigating the Functional Characteristics of Selected Variants and Their Vicinity Genomic Region 
+Title: Automated Functional Annotation of Genetic Variants and Linked Proxies 
 Version: 1.4.2
 Date: 2025-11-18
 Authors@R: c(
@@ -29,7 +29,7 @@ Imports:
     futile.logger (>= 1.4.3),
     png ,
     readr (>= 2.1.5)
-Description: To investigate the functional characteristics of selected SNPs and their vicinity genomic region. Linked SNPs in moderate to high linkage disequilibrium (e.g. r2>0.50) with the corresponding index SNPs will be selected for further analysis.
+Description: To automated functional annotation of genetic variants and linked proxies. Linked SNPs in moderate to high linkage disequilibrium (e.g. r2>0.50) with the corresponding index SNPs will be selected for further analysis.
 URL: https://cran.r-project.org/package=SNPannotator
 License: GPL-3
 Encoding: UTF-8

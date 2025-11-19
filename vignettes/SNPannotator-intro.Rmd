@@ -1,6 +1,6 @@
 ---
 title: "Introduction to SNPannotator package"
-subtitle: "Investigating the Functional Characteristics of Selected SNPs and Their Vicinity Genomic Region"
+subtitle: "Automated Functional Annotation of Genetic Variants and Linked Proxies"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to SNPannotator package}
@@ -55,7 +55,7 @@ A text-based configuration file that users must edit before running the analysis
 library(SNPannotator)
 
 # save the configuration file to a specific folder
-getConfigFile('/home/user/project1/postGWAS')
+getConfigFile('/home/user/analysis')
 ```
 
 ---
@@ -124,7 +124,7 @@ Example:
 
 library(SNPannotator)
 
-getConfigFile('/home/user/config.ini')
+getConfigFile('/home/user/analysis')
 
 ```
 
@@ -263,7 +263,7 @@ findRSID(15, 80137560 ,build= "37")
 
 ---
 
-### stringdb_annotation()
+### run_stringdb_annotation()
 
 This function takes a vector of gene symbols, retrieves their interaction partners from STRING DB, and performs functional enrichment analysis.
 
@@ -282,6 +282,6 @@ Function parameters
 Example:
 
 ```{r}
-stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
+run_stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
 
 ```
