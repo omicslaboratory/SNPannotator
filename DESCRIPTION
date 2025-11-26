@@ -1,7 +1,7 @@
 Package: SNPannotator
 Type: Package
 Title: Automated Functional Annotation of Genetic Variants and Linked Proxies 
-Version: 1.4.3
+Version: 1.4.4
 Date: 2025-11-26
 Authors@R: c(
   person(given = "Alireza", family = "Ani", role = c("aut", "cre"), email = "a.ani@umcg.nl"),

@@ -4,7 +4,7 @@
 
 .SNPannotator$package.description <- 'Investigating the Functional Characteristics of Selected SNPs and Their Vicinity Genomic Region'
 
-.SNPannotator$script.version <- '1.4.3'
+.SNPannotator$script.version <- '1.4.4'
 
 .SNPannotator$help <- 'Check out our website for more help and support'
 
