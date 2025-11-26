@@ -117,9 +117,9 @@ getCytobandFile_v2 <- function(build)
   c.File <- ''
 
   if(build == 'grch37')
-    c.File <- system.file("extdata", "cytoband_GRCh37.rda", package = "SNPannotator")
+    c.File <- system.file("extdata", "cytoband_grch37.rda", package = "SNPannotator")
   else if(build == 'grch38')
-    c.File <- system.file("extdata", "cytoband_GRCh38.rda", package = "SNPannotator")
+    c.File <- system.file("extdata", "cytoband_grch38.rda", package = "SNPannotator")
 
   if (!file.exists(c.File))
     print_and_log('Cytoband information file not found in the package!', level='fatal')
