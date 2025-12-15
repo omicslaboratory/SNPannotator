@@ -132,7 +132,7 @@ find.eqtl.ebi <- function(server,
       print_and_log(sprintf('eQTL data fetched with %s rows and %s columns.',nrow(out),ncol(out)),display=FALSE)
 
       if(is.element('pvalue', names(out)))
-        out[pvalue < p.value.threshold,]
+        out <- out[pvalue < p.value.threshold,]
 
       # log row and column count of table after filtering
       print_and_log(sprintf('eQTL data fetched with %s rows and %s columns after filtering (P < %s).',
