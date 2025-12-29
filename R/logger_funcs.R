@@ -7,8 +7,8 @@ setupLogOptions <- function(log.file.path) {
   if(file.exists(log.file.path))
     file.remove(log.file.path)
 
-  flog.appender(appender.file(log.file.path), name='SNPannotator_logger')
-  flog.threshold(INFO)
+  log_appender(appender_file(log.file.path), namespace='SNPannotator_logger')
+  log_threshold(INFO, namespace='SNPannotator_logger')
 }
 
 ## the main logger function
@@ -21,26 +21,26 @@ print_and_log <- function(a_message,
     return()
 
   #tryCatch({
-    # 1- display in console
-    if (.SNPannotator$verbose==TRUE && display == TRUE)
-      message(a_message, appendLF = LF)
+  # 1- display in console
+  if (.SNPannotator$verbose==TRUE && display == TRUE)
+    message(a_message, appendLF = LF)
 
-    # 2- save in file
+  # 2- save in file
 
-    # remove new line from the message
-    if(a_message != "")
-      a_message <- gsub(pattern = '\n',x = a_message,replacement = '')
+  # remove new line from the message
+  if(a_message != "")
+    a_message <- gsub(pattern = '\n',x = a_message,replacement = '')
 
-    if (level == "info") {
-      flog.info(msg = a_message, name = "SNPannotator_logger")
-    } else if (level == "warning") {
-      flog.warn(msg = a_message, name = "SNPannotator_logger")
-    } else if (level == "fatal") {
-      flog.fatal(msg = a_message, name = "SNPannotator_logger")
-      stop( "Pipeline stopped.", call. = FALSE)
-    } else {
-      message('unknown log level is defined.')
-    }
+  if (level == "info") {
+    log_info(a_message, namespace = "SNPannotator_logger")
+  } else if (level == "warning") {
+    log_warn(a_message, namespace = "SNPannotator_logger")
+  } else if (level == "fatal") {
+    log_fatal(a_message, namespace = "SNPannotator_logger")
+    stop( "Pipeline stopped.", call. = FALSE)
+  } else {
+    message('unknown log level is defined.')
+  }
   # },
   # warning = function(x){
   #   message(paste("Warning in logger: " ,x$message))

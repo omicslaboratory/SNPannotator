@@ -24,7 +24,7 @@ You can also install the latest version from GitHub. In that case, ensure that a
 install_missing_packages <- function() {
   pkgs <- c("data.table","httr","jsonlite","xml2","openxlsx","progress",
             "ggplot2","kableExtra","methods","rmarkdown","ini","igraph",
-            "ggraph","futile.logger","png","readr")
+            "ggraph","logger","png","readr")
   
   # Identify missing packages
   missing <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
@@ -242,7 +242,7 @@ findRSID(15, 80137560 ,build= "37")
 
 ---
 
-### stringdb_annotation()
+### run_stringdb_annotation()
 
 This function takes a vector of gene symbols, retrieves their interaction partners from STRING DB, and performs functional enrichment analysis.
 
@@ -261,5 +261,5 @@ Function parameters
 Example:
 
 ```{r}
-stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
+run_stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
 ```

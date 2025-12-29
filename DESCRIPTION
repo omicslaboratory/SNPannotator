@@ -1,8 +1,8 @@
 Package: SNPannotator
 Type: Package
 Title: Automated Functional Annotation of Genetic Variants and Linked Proxies 
-Version: 1.4.5
-Date: 2025-12-14
+Version: 1.4.6
+Date: 2025-12-28
 Authors@R: c(
   person(given = "Alireza", family = "Ani", role = c("aut", "cre"), email = "a.ani@umcg.nl"),
   person(given = "Zoha", family = "Kamali", role = "aut"),
@@ -26,7 +26,7 @@ Imports:
     ini (>= 0.3.1),
     igraph (>= 2.0.3),
     ggraph (>= 2.2.1),
-    futile.logger (>= 1.4.3),
+    logger (>= 0.4.0),
     png ,
     readr (>= 2.1.5)
 Description: To automated functional annotation of genetic variants and linked proxies. Linked SNPs in moderate to high linkage disequilibrium (e.g. r2>0.50) with the corresponding index SNPs will be selected for further analysis.

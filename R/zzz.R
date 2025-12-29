@@ -22,7 +22,7 @@ NULL
 #' @import ggplot2
 NULL
 
-#' @import futile.logger
+#' @import logger
 NULL
 
 #' @import methods
