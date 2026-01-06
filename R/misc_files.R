@@ -648,7 +648,7 @@ log.package.version <- function()
       x <- installed.packages()
       x <- as.data.table(x)
 
-      rx <- strsplit(x[Package == "SNPannotator",Imports],',\n')[[1]]
+      rx <- strsplit(x[Package == "SNPannotator",Imports],',(\n|\\s)')[[1]]
       for(r in rx)
       {
         r=gsub(x= r, pattern = "^\\s*([a-zA-Z0-9\\.]+).*",replacement = '\\1')

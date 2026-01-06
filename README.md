@@ -108,7 +108,7 @@ Function parameters:
 Example:
 
 ```{r}
-getConfigFile() # saves to current active directory
+getConfigFile('/home/user/') 
 ```
 
 ---
