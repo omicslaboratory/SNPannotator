@@ -61,22 +61,30 @@ pingEnsembl <- function(server)
 #' in 1000 Genomes project database. This database will be used for returning variables in high LD
 #' with the target SNP.
 #'
-#' @param build Genome build. Either 37 or 38. default: 38
+#' @param server Ensemble API end point. default: https://rest.ensembl.org
 #' @return A data table is returned which includes the name, description and size of the available populations
 #' in 1000 Genomes project database.
 #' @export
 #'
-EnsemblDatabases <- function(build = 38)
+EnsemblDatabases <- function(server = "https://rest.ensembl.org")
 {
-  server <- NULL
+  # DEPRECATE
+  #
+  # server <- NULL
+  #
+  # if(build == 37)
+  #   server <- "https://grch37.rest.ensembl.org"
+  #   else if (build == 38)
+  #     server <- "https://rest.ensembl.org"
+  #
+  # if(is.null(server))
+  #   message('Wrong build selected, available options are 37, 38.')
 
-  if(build == 37)
-    server <- "https://grch37.rest.ensembl.org"
-    else if (build == 38)
-      server <- "https://rest.ensembl.org"
-
-  if(is.null(server))
-    message('Wrong build selected, available options are 37, 38.')
+  if(!API_check(server,'ensembl'))
+  {
+    message('ENSEMBL API Endpoint is invalid.')
+    return(NULL)
+  }
 
   #========================================================
 
@@ -100,23 +108,28 @@ EnsemblDatabases <- function(build = 38)
 #' Shows the data releases available on this REST server.
 #' May return more than one release (infrequent non-standard Ensembl configuration).
 #'
-#' @param build Genome build. Either 37 or 38. default: 38
+#' @param server Ensemble API end point. default: https://rest.ensembl.org
 #' @return a message is displayed to the user
 #' @export
 #'
-EnsemblReleases <- function(build = 38)
+EnsemblReleases <- function(server = "https://rest.ensembl.org")
 {
+  # DEPRECATED
+  # server <- NULL
+  #
+  # if(build == 37)
+  #   server <- "https://grch37.rest.ensembl.org"
+  # else if (build == 38)
+  #   server <- "https://rest.ensembl.org"
+  #
+  # if(is.null(server))
+  #   message('Wrong build selected, available options are 37, 38.')
 
-  server <- NULL
-
-  if(build == 37)
-    server <- "https://grch37.rest.ensembl.org"
-  else if (build == 38)
-    server <- "https://rest.ensembl.org"
-
-  if(is.null(server))
-    message('Wrong build selected, available options are 37, 38.')
-
+  if(!API_check(server,'ensembl'))
+  {
+    message('ENSEMBL API Endpoint is invalid.')
+    return(NULL)
+  }
   #====================================================================
 
   ext <- "/info/data?"

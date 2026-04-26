@@ -43,7 +43,12 @@ find.gene.partners<- function(geneList,
 
       if (!is.null(r) && r$status_code == 200)
       {
-        string.partner.tb <- as.data.table(content(r, show_col_types=FALSE))
+
+        txt <- content(r, as = "text", encoding = "UTF-8")
+        string.partner.tb  <- read_tsv(txt, show_col_types = FALSE)
+        data.table::setDT(string.partner.tb)
+
+        #string.partner.tb <- as.data.table(content(r,as = "text/tab-separated-values", encoding = "UTF-8", show_col_types=FALSE))
 
         if(nrow(string.partner.tb) > 0)
         {
@@ -240,7 +245,7 @@ do.string.analysis <- function(geneList,
 
   print_and_log("Checking weblink ...", LF = FALSE)
 
-  if(STRING_config_list[['webLink']] == TRUE)
+  if(STRING_config_list[['webLink']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     webLink <- get.string.webLink(server, string.gene.partner.list)
     print_and_log('done.')
@@ -274,7 +279,7 @@ do.string.analysis <- function(geneList,
 
   pngContent <- NULL
 
-  if(STRING_config_list[['enrichment_image']] == TRUE)
+  if(STRING_config_list[['enrichment_image']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     pngContent <- get.string.enrichment.image(server, string.gene.partner.list,STRING_config_list,"Function")
     print_and_log('done.')
@@ -292,7 +297,7 @@ do.string.analysis <- function(geneList,
 
   pngContent <- NULL
 
-  if(STRING_config_list[['enrichment_image']] == TRUE)
+  if(STRING_config_list[['enrichment_image']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     pngContent <- get.string.enrichment.image(server, string.gene.partner.list,STRING_config_list,"Process")
     print_and_log('done.')
@@ -311,7 +316,7 @@ do.string.analysis <- function(geneList,
 
   pngContent <- NULL
 
-  if(STRING_config_list[['enrichment_image']] == TRUE)
+  if(STRING_config_list[['enrichment_image']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     pngContent <- get.string.enrichment.image(server, string.gene.partner.list,STRING_config_list,"Component")
     print_and_log('done.')
@@ -330,7 +335,7 @@ do.string.analysis <- function(geneList,
 
   pngContent <- NULL
 
-  if(STRING_config_list[['enrichment_image']] == TRUE)
+  if(STRING_config_list[['enrichment_image']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     pngContent <- get.string.enrichment.image(server, string.gene.partner.list,STRING_config_list,"DISEASES")
     print_and_log('done.')
@@ -348,7 +353,7 @@ do.string.analysis <- function(geneList,
 
   pngContent <- NULL
 
-  if(STRING_config_list[['enrichment_image']] == TRUE)
+  if(STRING_config_list[['enrichment_image']] == TRUE && !grepl("version-11",server)) ## this function is not available on V11
   {
     pngContent <- get.string.enrichment.image(server, string.gene.partner.list,STRING_config_list,"TISSUES")
     print_and_log('done.')
@@ -380,7 +385,7 @@ PingSTRING <- function(server)
       {
         print_and_log('accessible.')
 
-        string_vs <- fromJSON(content(r))
+        string_vs <- fromJSON(content(r, as = "text", encoding = "UTF-8"))
         if(!is.null(string_vs) && !is.null(string_vs$string_version))
           print_and_log(sprintf('STRING db version: %s', string_vs$string_version), display=FALSE)
 
@@ -579,7 +584,10 @@ get.string.functional.enrichment <- function(server,geneList){
 
       if (!is.null(r) && r$status_code == 200)
       {
-        string.enrich.tb <- as.data.table(content(r, show_col_types=FALSE))
+        txt <- content(r, as = "text", encoding = "UTF-8")
+        string.enrich.tb  <- read_tsv(txt, show_col_types = FALSE)
+        data.table::setDT(string.enrich.tb)
+        #string.enrich.tb <- as.data.table(content(r, show_col_types=FALSE))
 
         if(nrow(string.enrich.tb) > 0)
         {
@@ -668,7 +676,10 @@ get.string.description <- function(server,geneList){
 
       if (!is.null(r) && r$status_code == 200)
       {
-        string.annot.tb <- as.data.table(content(r, show_col_types=FALSE))
+        txt <- content(r, as = "text", encoding = "UTF-8")
+        string.annot.tb  <- read_tsv(txt, show_col_types = FALSE)
+        data.table::setDT(string.annot.tb)
+        #string.annot.tb <- as.data.table(content(r, show_col_types=FALSE))
 
         if(nrow(string.annot.tb) > 0)
         {
@@ -713,7 +724,7 @@ get.string.webLink <- function(server,geneList){
 
       if (!is.null(r) && r$status_code == 200)
       {
-        webLink <- fromJSON(content(r))
+        webLink <- fromJSON(content(r, as = "text", encoding = "UTF-8"))
 
         if(!is.null(webLink))
         {

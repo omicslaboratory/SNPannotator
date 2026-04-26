@@ -4,10 +4,10 @@
 \alias{EnsemblReleases}
 \title{data release available on this REST server.}
 \usage{
-EnsemblReleases(build = 38)
+EnsemblReleases(server = "https://rest.ensembl.org")
 }
 \arguments{
-\item{build}{Genome build. Either 37 or 38. default: 38}
+\item{server}{Ensemble API end point. default: https://rest.ensembl.org}
 }
 \value{
 a message is displayed to the user

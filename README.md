@@ -50,6 +50,15 @@ library(devtools)
 install_github("omicslaboratory/SNPannotator")
 ```
 
+
+Please note that The recommended installation method is via CRAN using install.packages("SNPannotator"), 
+which automatically resolves and installs all required dependencies. Users installing the package through GitHub 
+via devtools::install_github() will similarly benefit from automatic dependency installation. 
+The install_missing_packages() function is provided solely as a convenience utility for users 
+who install the package through alternative methods, such as from a local .tar.gz source file, 
+where automatic dependency resolution may not occur. 
+
+
 ---
 
 ## Input Preparation

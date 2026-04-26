@@ -82,6 +82,37 @@ loadConfigurationFile = function(path, demo = FALSE)
   tryCatch({
     configs = read.ini(filepath = path)
 
+    ## APIs
+    if(!API_check(configs$API$ENSEMBL_API_ENDPOINT,'ensembl'))
+    {
+      message('ENSEMBL API Endpoint is invalid.')
+      return(NULL)
+    } else {
+      configs$general$server <- configs$API$ENSEMBL_API_ENDPOINT
+    }
+
+    if(!API_check(configs$API$EBI_API_ENDPOINT,'ebi'))
+    {
+      message('eQTL catalog API Endpoint is invalid.')
+      return(NULL)
+    }
+
+    if(!API_check(configs$API$STRING_API_ENDPOINT,'string-db'))
+    {
+      message('STRING DB API Endpoint is invalid.')
+      return(NULL)
+    } else {
+      configs$STRING_DB$server <- configs$API$STRING_API_ENDPOINT
+    }
+
+    if(!API_check(configs$API$GTEX_API_ENDPOINT,'gtex'))
+    {
+      message('GTEx portal API Endpoint is invalid.')
+      return(NULL)
+    }
+
+    ##
+
     ## GENERAL
     ##
     if(is.null(configs$general$projectName))
@@ -130,12 +161,15 @@ loadConfigurationFile = function(path, demo = FALSE)
       configs$general$generateHTML <- TRUE
     #stop('Unknown input found for generateHTML parameter.')
 
-    # build 37 OR 38
-    configs$general$build = is_character_or_default(configs$general$build ,
-                                                    'build',
-                                                    c('grch37','grch38'),
-                                                    'grch37',
-                                                    ignore_error = FALSE)
+    # DEPRECATED - build 37 OR 38
+    # configs$general$build = is_character_or_default(configs$general$build ,
+    #                                                 'build',
+    #                                                 c('grch37','grch38'),
+    #                                                 'grch37',
+    #                                                 ignore_error = FALSE)
+
+    configs$general$build = ifelse(grepl('grch37', configs$API$ENSEMBL_API_ENDPOINT), 'grch37','grch38')
+
     # ##
 
     configs$general$nearestGene_type = is_character_or_default(configs$general$nearestGene_type,
@@ -157,17 +191,18 @@ loadConfigurationFile = function(path, demo = FALSE)
                                                                ignore_error = FALSE)
 
 
-    ## ENSEMBL server
+    ## DEPRECATED - ENSEMBL server
+    # configs$general$server <- switch (configs$general$build,
+    #                                   'grch37' = .SNPannotator$ENSEMBL_API_37,
+    #                                   'grch38' = .SNPannotator$ENSEMBL_API_38)
+    #
+    # if(is.null(configs$general$db))
+    # {
+    #   message('Database for Ensembl not provided.')
+    #   return(NULL)
+    # }
 
-    configs$general$server <- switch (configs$general$build,
-                                      'grch37' = .SNPannotator$ENSEMBL_API_37,
-                                      'grch38' = .SNPannotator$ENSEMBL_API_38)
 
-    if(is.null(configs$general$db))
-    {
-      message('Database for Ensembl not provided.')
-      return(NULL)
-    }
 
     ##
     if(!is.null(configs$general$window_size) &&
@@ -195,6 +230,7 @@ loadConfigurationFile = function(path, demo = FALSE)
     NA_or_false(configs$general$LDlist,'Unknown input found for LDlist parameter.')
     ##
 
+    # DEPRECATED
     if(!is.null(configs$general$start_index) &&
        !is.na(as.numeric(configs$general$start_index)))
       configs$general$start_index = as.numeric(configs$general$start_index)
@@ -271,12 +307,13 @@ loadConfigurationFile = function(path, demo = FALSE)
 
     if(configs$QTL$eQTL || configs$QTL$sQTL)
       configs$QTL$server <- switch (configs$general$build,
-                                      'grch37' = .SNPannotator$EBI_eqtl_API,
-                                      'grch38' = .SNPannotator$GTEx_eqtl_API)
+                                    'grch37' = configs$API$EBI_API_ENDPOINT,
+                                    'grch38' = configs$API$GTEX_API_ENDPOINT)
 
     if(configs$QTL$sQTL && configs$general$build =='grch37') ## GTEx only accepts variant id in build 38 , based on genomic position
     {
-      stop('sQTL information is currently available for build38 only.\n')
+      message('sQTL information is currently available for build38 only.\nChange the Ensembl API to build 38.')
+      return(NULL)
     }
 
 
@@ -387,7 +424,8 @@ loadConfigurationFile = function(path, demo = FALSE)
        configs$STRING_DB$description ||
        configs$STRING_DB$functional_annotation ||
        configs$STRING_DB$functional_enrichment )
-      configs$STRING_DB$server = .SNPannotator$STRINGDB_API
+      #configs$STRING_DB$server = .SNPannotator$STRINGDB_API
+      configs$STRING_DB$server = configs$API$STRING_API_ENDPOINT
 
     ##
     ## DEPRECATED - GWAS_Catalogue
@@ -428,6 +466,7 @@ loadConfigurationFile = function(path, demo = FALSE)
     configs$graphs$layout = eval(parse(text = configs$graphs$layout))
     else
       configs$graphs$layout = igraph::layout_in_circle
+
 
 
 
@@ -631,4 +670,17 @@ is_character_or_default = function(parameter,parameter_name,req_list,default_val
   else
     return(trimws(tolower(parameter)))
 
+}
+
+
+API_check <- function(url,db) {
+  if (is.null(url) || !is.character(url) || length(url) != 1 || nchar(url) == 0)
+    return(FALSE)
+
+  url <- trimws(tolower(url))
+
+  if(!grepl(pattern = db,x = url) || !grepl(pattern = "^https://.+\\..+", x= url))
+     return(FALSE)
+
+  return(TRUE)
 }
