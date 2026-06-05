@@ -595,10 +595,10 @@ getVariantData <- function(varNum, gVarId, varInfoList, database , LD)
       # varInfoList[['variant_data']]= tab
       # varInfoList[['GO_terms']]= go_tbl
 
-      output_table_list <- list('variant_table' = var_table,
-                                'clinvar_table' = clinvar_table,
-                                'gwascat_table' = gwascat_table,
-                                'phenotype_table' = phenotype_table_filtered)
+      output_table_list <- list('variant_table' = unlist_list_columns(var_table),
+                                'clinvar_table' = unlist_list_columns(clinvar_table),
+                                'gwascat_table' = unlist_list_columns(gwascat_table),
+                                'phenotype_table' = unlist_list_columns(phenotype_table_filtered))
       return(output_table_list)
     },
     error=function(x){

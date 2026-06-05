@@ -102,6 +102,11 @@ makeReport_CADD <- function(var.data) {
     # Calculate the number of elements in each column
     col_length <- ceiling(length(assoc) / 3)
     
+    pad_length <- col_length * 3 - length(assoc)
+    if (pad_length > 0) {
+      assoc <- c(assoc, rep('', pad_length))
+    }
+      
     # Create three columns
     col1 <- assoc[1:col_length]
     col2 <- assoc[(col_length + 1):(2 * col_length)]

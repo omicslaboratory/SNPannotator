@@ -91,7 +91,7 @@ inSilicoSeqPipeline <- function(rsID,
 
     #### method 2 ####
     # Split IDs into chunks of 100
-    id_chunks <- split_list(proxy.IDs, 150)
+    id_chunks <- split_list(proxy.IDs, 50)
 
     # Process each chunk separately and combine results
     proxylist <- Reduce(c, lapply(seq_along(id_chunks), function(i) {

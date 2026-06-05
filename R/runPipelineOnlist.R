@@ -260,8 +260,7 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
     .SNPannotator$pingEnsembl <- pingEnsembl(ensembl.server)
 
 
-    .SNPannotator$EnsemblRelease <- SNPannotator::EnsemblReleases(build = sub("^[^0-9]*([0-9]+).*", "\\1", build))
-    .SNPannotator$EnsemblRelease <- .SNPannotator$EnsemblRelease$releases[1]
+    .SNPannotator$EnsemblRelease <- SNPannotator::EnsemblReleases(server = ensembl.server)[[1]]
     print_and_log(paste("Ensembl release:", .SNPannotator$EnsemblRelease))
 
     project_info_tbl = cbind(project_info_tbl , data.table("Ensembl server URL" = ensembl.server))
@@ -846,12 +845,6 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
     appendXLSXfile(eqtl.output,thisSheetName = 'eQTL',fileName = output.xlsx.file, addFirst = FALSE)
     output_list <- c(output_list,list('eQTL'= eqtl.output))
 
-  }
-
-
-  # save excel file - eQTL report
-  if(!is.null(eqtl.output) && nrow(eqtl.output) > 0)
-  {
     appendXLSX_qtl_report(eqtl.output,'eQTL report',  eqtl.cluster.report , output.xlsx.file)
   }
 
@@ -865,12 +858,6 @@ run_annotation <- function(configurationFilePath, verbose = TRUE) {
     appendXLSXfile(sqtl.output,thisSheetName = 'sQTL',fileName = output.xlsx.file, addFirst = FALSE)
     output_list <- c(output_list,list('sQTL'= sqtl.output))
 
-  }
-
-
-  # save excel file - sQTL report
-  if(!is.null(sqtl.output) && nrow(sqtl.output) > 0)
-  {
     appendXLSX_qtl_report(sqtl.output,'sQTL report',  sqtl.cluster.report , output.xlsx.file)
   }
 
