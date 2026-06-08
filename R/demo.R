@@ -58,7 +58,7 @@ demo_annotation <- function() {
   outputFolder = config.list$general$outputFolder
   build = config.list$general$build
 
-  ensembl.server = config.list$general$server
+  ensembl.server = config.list$API$ENSEMBL_API_ENDPOINT
   db = config.list$general$db
   window_size = config.list$general$window_size
   r2 = config.list$general$r2
@@ -112,7 +112,7 @@ demo_annotation <- function() {
   STRING_config_list[['limit']] = config.list$STRING_DB$limit
 
   # QTL
-  qtl.server = config.list$QTL$server
+  qtl.server = config.list$API$GTEX_API_ENDPOINT
   qtl.p.value.threshold = config.list$QTL$pvalue_threshold
   eqtl.run <- config.list$QTL$eQTL
   sqtl.run <- config.list$QTL$sQTL

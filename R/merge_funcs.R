@@ -3,7 +3,7 @@ merge_data <- function(file_names) {
   obj_list <- lapply(file_names, readRDS)
 
   # config list
-  merged_configs <- setNames(
+  merged_configs <- stats::setNames(
     lapply(obj_list, function(x) x$config),
     paste0(tools::file_path_sans_ext(basename(file_names)), "_config")
   )
