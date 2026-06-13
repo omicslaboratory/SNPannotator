@@ -443,7 +443,17 @@ find.nearest.gene <- function(ch, pos, gene.set,nearestGene_type)
   if(nearestGene_type == 'all')
     data <- gene.set[chr==ch ,]
   else
+  {
     data <- gene.set[chr==ch & type== nearestGene_type,]
+
+    if(nrow(data) == 0)
+    {
+      data <- gene.set[chr==ch ,]
+      print_and_log(sprintf('Nearest gene strategy changed from %s to All.', nearestGene_type),
+                    level='warning',
+                    display=FALSE)
+    }
+  }
 
   data[, on.gene := ifelse(chr==ch & pos>start & pos<end, 1, 0)]
 

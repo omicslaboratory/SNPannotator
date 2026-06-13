@@ -269,7 +269,7 @@ find.qtl.GTEx <- function(server,datasetId=NULL,tissueSiteDetailId=NULL,qtl,vari
 
   output.tbl <- NULL
 
-  query <- sprintf("%s/%s?format=json",server,ext)
+  query <- sprintf("%s/%s?format=json&page=0&itemsPerPage=10000",server,ext)
 
   if(!is.null(tissueSiteDetailId))
     query <- sprintf("%s&tissueSiteDetailId=%s",query,tissueSiteDetailId)
