@@ -385,3 +385,177 @@ findRSID <- function(chromosome, start_position,end_position=NULL, build = "38",
 
   return(output.tbl)
 }
+
+
+
+#' Find variant synonyms from Ensembl
+#'
+#' Retrieves synonym rsIDs for a set of variants using the Ensembl REST API.
+#' The input must be a character vector of variant identifiers in rsID format
+#' (e.g., `"rs12345"`). The function returns a `data.table` mapping each
+#' input rsID to any synonyms reported by Ensembl.
+#'
+#' @param rsids A character vector of variant identifiers in rsID format.
+#' @param build Numeric. Genome build to query. Supported values are `37` and `38`. Defaults to `38`.
+#' @param keepRSOnly Logical. If TRUE, only synonyms starting with 'rs' will be retained in the output.
+#'
+#' @return A `data.table` with the following columns:
+#' \describe{
+#'   \item{input_rsid}{The input variant identifier.}
+#'   \item{updated_rsid}{The updated variant identifier.}
+#'   \item{synonym}{A synonym rsID reported by Ensembl.}
+#' }
+#'
+#' @export
+findSynonyms <- function(rsids, build = "38",keepRSOnly=TRUE) {
+
+  if (is.null(rsids) || length(rsids) == 0) {
+    message("Provide a rs list.")
+    return(invisible(NULL))
+  }
+
+  rsids <- tolower(rsids)
+
+  rsids <- rsids[startsWith(rsids, "rs")]
+
+  if (length(rsids) == 0) {
+    message("No variant with rs number was found in the input list.")
+    return(invisible(NULL))
+  }
+
+  rsids <- unique(rsids)
+
+  if (build == "37") {
+    server <- .SNPannotator$ENSEMBL_API_37
+  } else if (build == "38") {
+    server <- .SNPannotator$ENSEMBL_API_38
+  } else {
+    stop("Assembly version is wrong. It should be either '37' or '38'.")
+  }
+  batch_size = 20
+  ext <- "/variation/human"
+
+  batches <- split(rsids, ceiling(seq_along(rsids) / batch_size))
+
+  output_list <- list()
+  counter <- 1
+
+  for (batch in batches) {
+
+    body_json <- toJSON(
+      list(ids = I(unname(batch))),
+      auto_unbox = TRUE
+    )
+
+    resp <- try(
+      httr::POST(
+        url = paste0(server, ext),
+        httr::content_type("application/json"),
+        httr::accept("application/json"),
+        body = body_json
+      )
+    )
+
+    if (inherits(resp, "try-error") || status_code(resp) != 200) {
+
+      output_list[[counter]] <- data.frame(
+        input_rsid = batch,
+        synonym = NA_character_,
+        stringsAsFactors = FALSE
+      )
+
+      counter <- counter + 1
+      next
+    }
+
+    dat <- fromJSON(
+      content(resp, "text", encoding = "UTF-8"),
+      simplifyVector = FALSE
+    )
+
+    returned_keys <- names(dat)
+
+    for (input_rsid in batch) {
+
+      matched_record <- NULL
+      matched_returned_key <- NA_character_
+
+      for (returned_key in returned_keys) {
+
+        x <- dat[[returned_key]]
+
+        returned_name <- x$name
+
+        syns <- x$synonyms
+        if (is.null(syns)) {
+          syns <- character(0)
+        } else {
+          syns <- unlist(syns)
+        }
+
+        possible_ids <- unique(tolower(c(
+          returned_key,
+          returned_name,
+          syns
+        )))
+
+        if (tolower(input_rsid) %in% possible_ids) {
+          matched_record <- x
+          matched_returned_key <- returned_key
+          break
+        }
+      }
+
+      if (is.null(matched_record)) {
+
+        output_list[[counter]] <- data.frame(
+          input_rsid = input_rsid,
+          updated_rsid = NA_character_,
+          synonym = NA_character_,
+          stringsAsFactors = FALSE
+        )
+
+      } else {
+
+        returned_name <- matched_record$name
+
+        syns <- matched_record$synonyms
+        if (is.null(syns) || length(syns) == 0) {
+
+          output_list[[counter]] <- data.frame(
+            input_rsid = input_rsid,
+            updated_rsid = returned_name,
+            synonym = NA_character_,
+            stringsAsFactors = FALSE
+          )
+
+        } else {
+
+          syns <- unlist(syns)
+
+          output_list[[counter]] <- data.frame(
+            input_rsid = rep(input_rsid, length(syns)),
+            updated_rsid = rep(returned_name, length(syns)),
+            synonym = syns,
+            stringsAsFactors = FALSE
+          )
+        }
+      }
+
+      counter <- counter + 1
+    }
+
+  }
+
+  output_tbl <- do.call(rbind, output_list)
+  rownames(output_tbl) <- NULL
+
+  # Filter for synonyms starting with 'rs' if keepRSOnly is TRUE
+  if (keepRSOnly) {
+    output_tbl <- output_tbl[grepl("^rs", output_tbl$synonym, ignore.case = TRUE) |
+                               is.na(output_tbl$synonym), ]
+  }
+
+  return(as.data.table(output_tbl))
+}
+

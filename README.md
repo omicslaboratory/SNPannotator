@@ -251,19 +251,39 @@ findRSID(15, 80137560 ,build= "37")
 
 ---
 
+### findSynonyms()
+
+Retrieves synonym rsIDs for a set of variants using the Ensembl REST API.
+
+Function parameters
+
+- rsids, A character vector of variant identifiers in rsID format.
+
+- build, Genome build to query. Supported values are `37` and `38`. Defaults to `38`.
+
+- keepRSOnly, If TRUE, only synonyms starting with 'rs' will be retained in the output.
+
+Example:
+
+```{r}
+findSynonyms(c('rs699','rs1234'))
+```
+
+---
+
 ### run_stringdb_annotation()
 
 This function takes a vector of gene symbols, retrieves their interaction partners from STRING DB, and performs functional enrichment analysis.
 
 Function parameters
 
-- name A character string specifying a unique identifier for this analysis run.
+- name, A character string specifying a unique identifier for this analysis run.
 
-- gene_list A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).
+- gene_list, A character vector of gene symbols (e.g., HGNC symbols or Ensembl gene IDs).
 
-- required_score Threshold of significance to include an interaction, a number between 0 and 1000.
+- required_score, Threshold of significance to include an interaction, a number between 0 and 1000.
 
-- limit Limits the number of interaction partners retrieved per protein, a number between 0 and 100.
+- limit, Limits the number of interaction partners retrieved per protein, a number between 0 and 100.
 
 - ... Additional arguments passed to downstream functions for extended customization.
 
@@ -272,3 +292,5 @@ Example:
 ```{r}
 run_stringdb_annotation('BC_project',c('BRCA1','BRCA2'),limit=10)
 ```
+
+
